@@ -1,26 +1,35 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Brand Palette - New Colors */
+  --color-primary: #26245D;
+  /* Dark Blue (Headings) */
+  --color-secondary: #008EBB;
+  /* Light Blue (Emphasis) */
+  --color-surface: #D8D7F6;
+  /* Light Purple (Backgrounds/Cards) */
+  --background: #FEFEFF;
+  /* Off-White */
+  --foreground: #454293;
+  /* Dark Purple (Body Text) */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-surface: var(--color-surface);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-geist-sans);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html,
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  overflow-x: hidden;
+  width: 100%;
 }
