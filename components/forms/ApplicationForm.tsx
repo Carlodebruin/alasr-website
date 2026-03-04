@@ -20,17 +20,31 @@ export const ApplicationForm = () => {
     const [message, setMessage] = useState("");
     const [errors, setErrors] = useState<Record<string, string>>({});
 
-    const validateLuhn = (id: string) => {
-        let sum = 0;
-        for (let i = 0; i < id.length; i++) {
-            let digit = parseInt(id.charAt(i), 10);
-            if ((id.length - 1 - i) % 2 === 1) {
-                digit *= 2;
-                if (digit > 9) digit -= 9;
-            }
-            sum += digit;
+    const validateSAID = (id: string) => {
+        if (!/^\d{13}$/.test(id)) return false;
+
+        let sumOdds = 0;
+        for (let i = 0; i < 12; i += 2) {
+            sumOdds += parseInt(id.charAt(i), 10);
         }
-        return sum % 10 === 0;
+
+        let evenStr = "";
+        for (let i = 1; i < 12; i += 2) {
+            evenStr += id.charAt(i);
+        }
+
+        const evensMult = (parseInt(evenStr, 10) * 2).toString();
+
+        let sumEvens = 0;
+        for (let i = 0; i < evensMult.length; i++) {
+            sumEvens += parseInt(evensMult.charAt(i), 10);
+        }
+
+        const total = sumOdds + sumEvens;
+        let checkDigit = 10 - (total % 10);
+        if (checkDigit === 10) checkDigit = 0;
+
+        return checkDigit === parseInt(id.charAt(12), 10);
     };
 
     const validateLearnerId = (value: string) => {
@@ -46,7 +60,7 @@ export const ApplicationForm = () => {
             }
         }
 
-        if (!validateLuhn(value)) {
+        if (!validateSAID(value)) {
             return "Invalid SA ID (checksum failed)";
         }
         return "";
