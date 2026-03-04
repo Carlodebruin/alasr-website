@@ -428,16 +428,16 @@ export const ApplicationForm = () => {
                                     <div className="grid md:grid-cols-2 gap-6">
                                         <div className="md:col-span-2">
                                             <label className="block text-sm font-medium text-gray-700 mb-1">Physical Address</label>
-                                            <input required name="learnerPhysicalAddress" type="text"
+                                            <textarea required name="learnerPhysicalAddress" rows={3}
                                                 className={`w-full px-4 py-2 rounded-lg border focus:ring-primary focus:border-primary ${errors.learnerPhysicalAddress ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                                                 onChange={(e) => {
                                                     if (isPostalSameAsPhysical) {
-                                                        const postalInput = formRef.current?.querySelector('input[name="learnerPostalAddress"]') as HTMLInputElement;
+                                                        const postalInput = formRef.current?.querySelector('[name="learnerPostalAddress"]') as HTMLTextAreaElement;
                                                         if (postalInput) postalInput.value = e.target.value;
                                                     }
                                                 }}
                                                 onBlur={(e) => setErrors(prev => ({ ...prev, learnerPhysicalAddress: e.target.checkValidity() ? "" : "Physical address is required" }))}
-                                            />
+                                            ></textarea>
                                             {errors.learnerPhysicalAddress && (
                                                 <p className="text-red-500 text-xs mt-1 flex items-center"><AlertCircle className="w-3 h-3 mr-1" /> {errors.learnerPhysicalAddress}</p>
                                             )}
@@ -463,9 +463,9 @@ export const ApplicationForm = () => {
                                                         onChange={(e) => {
                                                             setIsPostalSameAsPhysical(e.target.checked);
                                                             if (e.target.checked) {
-                                                                const physicalValue = (formRef.current?.querySelector('input[name="learnerPhysicalAddress"]') as HTMLInputElement)?.value;
+                                                                const physicalValue = (formRef.current?.querySelector('[name="learnerPhysicalAddress"]') as HTMLTextAreaElement)?.value;
                                                                 const physicalCityValue = (formRef.current?.querySelector('input[name="learnerCity"]') as HTMLInputElement)?.value;
-                                                                const postalInput = formRef.current?.querySelector('input[name="learnerPostalAddress"]') as HTMLInputElement;
+                                                                const postalInput = formRef.current?.querySelector('[name="learnerPostalAddress"]') as HTMLTextAreaElement;
                                                                 const postalCityInput = formRef.current?.querySelector('input[name="learnerPostalCity"]') as HTMLInputElement;
                                                                 if (postalInput) {
                                                                     postalInput.value = physicalValue || "";
@@ -482,14 +482,14 @@ export const ApplicationForm = () => {
                                                     <label htmlFor="sameAsPhysical" className="ml-2 text-xs font-normal text-gray-500">Same as Physical</label>
                                                 </div>
                                             </label>
-                                            <input
+                                            <textarea
                                                 required={!isPostalSameAsPhysical}
                                                 name="learnerPostalAddress"
-                                                type="text"
+                                                rows={3}
                                                 disabled={isPostalSameAsPhysical}
                                                 className={`w-full px-4 py-2 rounded-lg border focus:ring-primary focus:border-primary ${isPostalSameAsPhysical ? 'bg-gray-50' : ''} ${errors.learnerPostalAddress ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                                                 onBlur={(e) => setErrors(prev => ({ ...prev, learnerPostalAddress: e.target.checkValidity() ? "" : "Postal address is required" }))}
-                                            />
+                                            ></textarea>
                                             {errors.learnerPostalAddress && (
                                                 <p className="text-red-500 text-xs mt-1 flex items-center"><AlertCircle className="w-3 h-3 mr-1" /> {errors.learnerPostalAddress}</p>
                                             )}
@@ -672,15 +672,15 @@ export const ApplicationForm = () => {
                                     <div className="grid md:grid-cols-2 gap-6">
                                         <div className="md:col-span-2">
                                             <label className="block text-sm font-medium text-gray-700 mb-1">Physical Address</label>
-                                            <input name="parent1PhysicalAddress" type="text"
+                                            <textarea name="parent1PhysicalAddress" rows={3}
                                                 className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary"
                                                 onChange={(e) => {
                                                     if (isP1PostalSameAsPhysical) {
-                                                        const postalInput = formRef.current?.querySelector('input[name="parent1PostalAddress"]') as HTMLInputElement;
+                                                        const postalInput = formRef.current?.querySelector('[name="parent1PostalAddress"]') as HTMLTextAreaElement;
                                                         if (postalInput) postalInput.value = e.target.value;
                                                     }
                                                 }}
-                                            />
+                                            ></textarea>
                                         </div>
                                         <div className="md:col-span-2">
                                             <label className="block text-sm font-medium text-gray-700 mb-1">City / Suburb</label>
@@ -697,9 +697,9 @@ export const ApplicationForm = () => {
                                                         onChange={(e) => {
                                                             setIsP1PostalSameAsPhysical(e.target.checked);
                                                             if (e.target.checked) {
-                                                                const physicalValue = (formRef.current?.querySelector('input[name="parent1PhysicalAddress"]') as HTMLInputElement)?.value;
+                                                                const physicalValue = (formRef.current?.querySelector('[name="parent1PhysicalAddress"]') as HTMLTextAreaElement)?.value;
                                                                 const physicalCityValue = (formRef.current?.querySelector('input[name="parent1City"]') as HTMLInputElement)?.value;
-                                                                const postalInput = formRef.current?.querySelector('input[name="parent1PostalAddress"]') as HTMLInputElement;
+                                                                const postalInput = formRef.current?.querySelector('[name="parent1PostalAddress"]') as HTMLTextAreaElement;
                                                                 const postalCityInput = formRef.current?.querySelector('input[name="parent1PostalCity"]') as HTMLInputElement;
                                                                 if (postalInput) postalInput.value = physicalValue || "";
                                                                 if (postalCityInput) postalCityInput.value = physicalCityValue || "";
@@ -710,12 +710,12 @@ export const ApplicationForm = () => {
                                                     <label htmlFor="p1SameAsPhysical" className="ml-2 text-xs font-normal text-gray-500">Same as Physical</label>
                                                 </div>
                                             </label>
-                                            <input
+                                            <textarea
                                                 name="parent1PostalAddress"
-                                                type="text"
+                                                rows={3}
                                                 disabled={isP1PostalSameAsPhysical}
                                                 className={`w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary ${isP1PostalSameAsPhysical ? 'bg-gray-50' : ''}`}
-                                            />
+                                            ></textarea>
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">City / Suburb</label>
@@ -855,15 +855,15 @@ export const ApplicationForm = () => {
                                     <div className="grid md:grid-cols-2 gap-6">
                                         <div className="md:col-span-2">
                                             <label className="block text-sm font-medium text-gray-700 mb-1">Physical Address</label>
-                                            <input name="parent2PhysicalAddress" type="text"
+                                            <textarea name="parent2PhysicalAddress" rows={3}
                                                 className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary"
                                                 onChange={(e) => {
                                                     if (isP2PostalSameAsPhysical) {
-                                                        const postalInput = formRef.current?.querySelector('input[name="parent2PostalAddress"]') as HTMLInputElement;
+                                                        const postalInput = formRef.current?.querySelector('[name="parent2PostalAddress"]') as HTMLTextAreaElement;
                                                         if (postalInput) postalInput.value = e.target.value;
                                                     }
                                                 }}
-                                            />
+                                            ></textarea>
                                         </div>
                                         <div className="md:col-span-2">
                                             <label className="block text-sm font-medium text-gray-700 mb-1">City / Suburb</label>
@@ -880,9 +880,9 @@ export const ApplicationForm = () => {
                                                         onChange={(e) => {
                                                             setIsP2PostalSameAsPhysical(e.target.checked);
                                                             if (e.target.checked) {
-                                                                const physicalValue = (formRef.current?.querySelector('input[name="parent2PhysicalAddress"]') as HTMLInputElement)?.value;
+                                                                const physicalValue = (formRef.current?.querySelector('[name="parent2PhysicalAddress"]') as HTMLTextAreaElement)?.value;
                                                                 const physicalCityValue = (formRef.current?.querySelector('input[name="parent2City"]') as HTMLInputElement)?.value;
-                                                                const postalInput = formRef.current?.querySelector('input[name="parent2PostalAddress"]') as HTMLInputElement;
+                                                                const postalInput = formRef.current?.querySelector('[name="parent2PostalAddress"]') as HTMLTextAreaElement;
                                                                 const postalCityInput = formRef.current?.querySelector('input[name="parent2PostalCity"]') as HTMLInputElement;
                                                                 if (postalInput) postalInput.value = physicalValue || "";
                                                                 if (postalCityInput) postalCityInput.value = physicalCityValue || "";
@@ -893,12 +893,12 @@ export const ApplicationForm = () => {
                                                     <label htmlFor="p2SameAsPhysical" className="ml-2 text-xs font-normal text-gray-500">Same as Physical</label>
                                                 </div>
                                             </label>
-                                            <input
+                                            <textarea
                                                 name="parent2PostalAddress"
-                                                type="text"
+                                                rows={3}
                                                 disabled={isP2PostalSameAsPhysical}
                                                 className={`w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary ${isP2PostalSameAsPhysical ? 'bg-gray-50' : ''}`}
-                                            />
+                                            ></textarea>
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">City / Suburb</label>
