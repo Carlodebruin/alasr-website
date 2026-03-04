@@ -52,11 +52,11 @@ try {
   $learnerCity = $_POST['learnerCity'] ?? '';
   $pAddress = $_POST['learnerPhysicalAddress'] ?? 'N/A';
   if ($learnerCity)
-    $pAddress .= ", $learnerCity";
+    $pAddress .= "\n$learnerCity";
   $postAddress = $_POST['learnerPostalAddress'] ?? 'N/A';
   $learnerPostalCity = $_POST['learnerPostalCity'] ?? '';
   if ($learnerPostalCity)
-    $postAddress .= ", $learnerPostalCity";
+    $postAddress .= "\n$learnerPostalCity";
   $postCode = $_POST['learnerPostalCode'] ?? 'N/A';
 
   // Parent 1
@@ -134,7 +134,7 @@ try {
       .data-grid { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
       .data-grid td { padding: 10px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
       .label { width: 30%; font-size: 12px; font-weight: bold; color: #4b5563; text-transform: uppercase; }
-      .value { width: 70%; font-size: 14px; color: #111827; }
+      .value { width: 70%; font-size: 14px; color: #111827; white-space: pre-wrap; }
       
       .audit-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px; font-size: 12px; color: #64748b; }
       .footer { padding: 20px 40px; background: #f9fafb; border-top: 1px solid #e5e7eb; text-align: center; font-size: 11px; color: #9ca3af; }
