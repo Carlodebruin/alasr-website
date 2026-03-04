@@ -939,11 +939,13 @@ export const ApplicationForm = () => {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Family Doctor Name</label>
-                                    <input required name="doctorName" type="text" className="w-full px-4 py-2 rounded-lg border border-gray-300" />
+                                    <input required name="doctorName" type="text" className={`w-full px-4 py-2 rounded-lg border focus:ring-primary focus:border-primary ${errors.doctorName ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} />
+                                    {errors.doctorName && <p className="text-red-500 text-xs mt-1 flex items-center"><AlertCircle className="w-3 h-3 mr-1" /> {errors.doctorName}</p>}
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Doctor Phone</label>
-                                    <input required name="doctorPhone" type="tel" className="w-full px-4 py-2 rounded-lg border border-gray-300" />
+                                    <input required name="doctorPhone" type="tel" className={`w-full px-4 py-2 rounded-lg border focus:ring-primary focus:border-primary ${errors.doctorPhone ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} />
+                                    {errors.doctorPhone && <p className="text-red-500 text-xs mt-1 flex items-center"><AlertCircle className="w-3 h-3 mr-1" /> {errors.doctorPhone}</p>}
                                 </div>
                                 <div className="md:col-span-2">
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Allergies</label>
@@ -953,24 +955,31 @@ export const ApplicationForm = () => {
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Disabilities / Handicaps</label>
                                     <textarea name="disabilities" rows={2} placeholder="List any physical or cognitive disabilities" className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary"></textarea>
                                 </div>
-                                <div>
+                                <div className="md:col-span-2">
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Emergency Contact Name (Not Parent)</label>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <input required name="emergencyName" type="text" placeholder="Full Name" className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary" />
-                                        <select required name="emergencyRel" className="w-full px-4 py-2 rounded-lg border border-gray-300 bg-white focus:ring-primary">
-                                            <option value="">Relationship</option>
-                                            <option value="Parent">Parent</option>
-                                            <option value="Grandparent">Grandparent</option>
-                                            <option value="Aunt or Uncle">Aunt or Uncle</option>
-                                            <option value="Family Friend">Family Friend</option>
-                                            <option value="Other">Other</option>
-                                        </select>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                            <input required name="emergencyName" type="text" placeholder="Full Name" className={`w-full px-4 py-2 rounded-lg border focus:ring-primary focus:border-primary ${errors.emergencyName ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} />
+                                            {errors.emergencyName && <p className="text-red-500 text-xs mt-1 flex items-center"><AlertCircle className="w-3 h-3 mr-1" /> {errors.emergencyName}</p>}
+                                        </div>
+                                        <div>
+                                            <select required name="emergencyRel" className={`w-full px-4 py-2 rounded-lg border bg-white focus:ring-primary focus:border-primary ${errors.emergencyRel ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}>
+                                                <option value="">Relationship</option>
+                                                <option value="Parent">Parent</option>
+                                                <option value="Grandparent">Grandparent</option>
+                                                <option value="Aunt or Uncle">Aunt or Uncle</option>
+                                                <option value="Family Friend">Family Friend</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                            {errors.emergencyRel && <p className="text-red-500 text-xs mt-1 flex items-center"><AlertCircle className="w-3 h-3 mr-1" /> {errors.emergencyRel}</p>}
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="space-y-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Emergency Contact Phone 1</label>
-                                        <input required name="emergencyPhone" type="tel" className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary" />
+                                        <input required name="emergencyPhone" type="tel" className={`w-full px-4 py-2 rounded-lg border focus:ring-primary focus:border-primary ${errors.emergencyPhone ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} />
+                                        {errors.emergencyPhone && <p className="text-red-500 text-xs mt-1 flex items-center"><AlertCircle className="w-3 h-3 mr-1" /> {errors.emergencyPhone}</p>}
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Emergency Contact Phone 2 (Optional)</label>
