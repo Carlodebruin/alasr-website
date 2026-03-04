@@ -438,6 +438,16 @@ export const ApplicationForm = () => {
                                                 <p className="text-red-500 text-xs mt-1 flex items-center"><AlertCircle className="w-3 h-3 mr-1" /> {errors.learnerPhysicalAddress}</p>
                                             )}
                                         </div>
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">City / Suburb</label>
+                                            <input required name="learnerCity" type="text"
+                                                className={`w-full px-4 py-2 rounded-lg border focus:ring-primary focus:border-primary ${errors.learnerCity ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                                                onBlur={(e) => setErrors(prev => ({ ...prev, learnerCity: e.target.checkValidity() ? "" : "City/Suburb is required" }))}
+                                            />
+                                            {errors.learnerCity && (
+                                                <p className="text-red-500 text-xs mt-1 flex items-center"><AlertCircle className="w-3 h-3 mr-1" /> {errors.learnerCity}</p>
+                                            )}
+                                        </div>
                                         <div>
                                             <label className="flex items-center text-sm font-medium text-gray-700 mb-1">
                                                 <span>Postal Address</span>
@@ -576,8 +586,12 @@ export const ApplicationForm = () => {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">ID Number</label>
-                                    <input required name="parent1Id" type="text" className={`w-full px-4 py-2 rounded-lg border focus:ring-primary focus:border-primary ${errors.parent1Id ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} onBlur={(e) => setErrors(prev => ({ ...prev, parent1Id: e.target.checkValidity() ? "" : "ID Number is required" }))} />
+                                    <input name="parent1Id" type="text" className={`w-full px-4 py-2 rounded-lg border focus:ring-primary focus:border-primary ${errors.parent1Id ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} onBlur={(e) => setErrors(prev => ({ ...prev, parent1Id: e.target.checkValidity() ? "" : "ID Number is required" }))} />
                                     {errors.parent1Id && <p className="text-red-500 text-xs mt-1 flex items-center"><AlertCircle className="w-3 h-3 mr-1" /> {errors.parent1Id}</p>}
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Passport Number (Optional)</label>
+                                    <input name="parent1Passport" type="text" placeholder="For international parents" className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Relationship</label>
@@ -647,6 +661,10 @@ export const ApplicationForm = () => {
                                                     }
                                                 }}
                                             />
+                                        </div>
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">City / Suburb</label>
+                                            <input name="parent1City" type="text" className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary" />
                                         </div>
                                         <div>
                                             <label className="flex items-center text-sm font-medium text-gray-700 mb-1">
@@ -754,6 +772,10 @@ export const ApplicationForm = () => {
                                     <input name="parent2Id" type="text" className="w-full px-4 py-2 rounded-lg border border-gray-300" />
                                 </div>
                                 <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Passport Number (Optional)</label>
+                                    <input name="parent2Passport" type="text" placeholder="For international parents" className="w-full px-4 py-2 rounded-lg border border-gray-300" />
+                                </div>
+                                <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Relationship</label>
                                     <select name="parent2Rel" className="w-full px-4 py-2 rounded-lg border border-gray-300 bg-white">
                                         <option value="">Select</option>
@@ -814,6 +836,10 @@ export const ApplicationForm = () => {
                                                     }
                                                 }}
                                             />
+                                        </div>
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">City / Suburb</label>
+                                            <input name="parent2City" type="text" className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary" />
                                         </div>
                                         <div>
                                             <label className="flex items-center text-sm font-medium text-gray-700 mb-1">

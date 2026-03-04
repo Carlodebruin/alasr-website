@@ -49,7 +49,10 @@ try {
   $grade = $_POST['grade'] ?? 'N/A';
   $homeLanguage = $_POST['homeLanguage'] ?? 'N/A';
 
+  $learnerCity = $_POST['learnerCity'] ?? '';
   $pAddress = $_POST['learnerPhysicalAddress'] ?? 'N/A';
+  if ($learnerCity)
+    $pAddress .= ", $learnerCity";
   $postAddress = $_POST['learnerPostalAddress'] ?? 'N/A';
   $postCode = $_POST['learnerPostalCode'] ?? 'N/A';
 
@@ -60,7 +63,12 @@ try {
   $p1KnownAs = $_POST['parent1KnownAs'] ?? '';
   $parent1FullName = trim("$p1Title $p1Names $p1Surname");
 
-  $parent1Id = $_POST['parent1Id'] ?? 'N/A';
+  $parent1Id = $_POST['parent1Id'] ?? '';
+  $parent1Passport = $_POST['parent1Passport'] ?? '';
+  $p1IdLabel = $parent1Id ? $parent1Id : 'N/A';
+  if ($parent1Passport)
+    $p1IdLabel .= " (Passport: $parent1Passport)";
+
   $parent1Rel = $_POST['parent1Rel'] ?? 'N/A';
   $parent1Marital = $_POST['parent1MaritalStatus'] ?? 'N/A';
   $parent1Occupation = $_POST['parent1Occupation'] ?? 'N/A';
@@ -76,7 +84,12 @@ try {
   $p2Names = $_POST['parent2FirstName'] ?? '';
   $parent2FullName = trim("$p2Title $p2Names $p2Surname");
 
-  $parent2Id = $_POST['parent2Id'] ?? 'N/A';
+  $parent2Id = $_POST['parent2Id'] ?? '';
+  $parent2Passport = $_POST['parent2Passport'] ?? '';
+  $p2IdLabel = $parent2Id ? $parent2Id : 'N/A';
+  if ($parent2Passport)
+    $p2IdLabel .= " (Passport: $parent2Passport)";
+
   $parent2Rel = $_POST['parent2Rel'] ?? 'N/A';
   $parent2Mobile = $_POST['parent2Mobile'] ?? 'N/A';
   $parent2Email = $_POST['parent2Email'] ?? 'N/A';
@@ -160,7 +173,7 @@ try {
         <table class='data-grid'>
           <tr><td class='label'>Name</td><td class='value'>$parent1FullName</td></tr>
           <tr><td class='label'>Relationship</td><td class='value'>$parent1Rel</td></tr>
-          <tr><td class='label'>ID Number</td><td class='value'>$parent1Id</td></tr>
+          <tr><td class='label'>ID Number</td><td class='value'>$p1IdLabel</td></tr>
           <tr><td class='label'>Contact</td><td class='value'>M: $parent1Mobile | W: $parent1Work | H: $parent1Home</td></tr>
           <tr><td class='label'>Email</td><td class='value'>$parent1Email</td></tr>
           <tr><td class='label'>Employment</td><td class='value'>$parent1Occupation at $parent1Employer</td></tr>
@@ -172,7 +185,7 @@ try {
         <table class='data-grid'>
           <tr><td class='label'>Name</td><td class='value'>$parent2FullName</td></tr>
           <tr><td class='label'>Relationship</td><td class='value'>$parent2Rel</td></tr>
-          <tr><td class='label'>ID Number</td><td class='value'>$parent2Id</td></tr>
+          <tr><td class='label'>ID Number</td><td class='value'>$p2IdLabel</td></tr>
           <tr><td class='label'>Contact</td><td class='value'>$parent2Mobile</td></tr>
           <tr><td class='label'>Email</td><td class='value'>$parent2Email</td></tr>
         </table>";
