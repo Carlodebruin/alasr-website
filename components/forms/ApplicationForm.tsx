@@ -48,20 +48,24 @@ export const ApplicationForm = () => {
     };
 
     const validateLearnerId = (value: string) => {
-        if (!value) return "ID Number is required";
-        if (!/^\d{13}$/.test(value)) return "SA ID must be exactly 13 digits";
+        if (!value) return "ID / Passport Number is required";
 
-        const dobInput = formRef.current?.querySelector('input[name="dob"]') as HTMLInputElement;
-        if (dobInput?.value) {
-            const dob = dobInput.value.replace(/-/g, ""); // "YYYYMMDD"
-            const dobPart = dob.substring(2); // "YYMMDD"
-            if (value.substring(0, 6) !== dobPart) {
-                return `ID must start with ${dobPart} to match Date of Birth`;
+        const cleanValue = value.replace(/[\s-]/g, '');
+
+        if (/^\d{13}$/.test(cleanValue)) {
+            const dobInput = formRef.current?.querySelector('input[name="dob"]') as HTMLInputElement;
+            if (dobInput?.value) {
+                const dob = dobInput.value.replace(/-/g, ""); // "YYYYMMDD"
+                const dobPart = dob.substring(2); // "YYMMDD"
+                if (cleanValue.substring(0, 6) !== dobPart) {
+                    return `ID must start with ${dobPart} to match Date of Birth`;
+                }
             }
-        }
-
-        if (!validateSAID(value)) {
-            return "Invalid SA ID (checksum failed)";
+            if (!validateSAID(cleanValue)) {
+                return "Invalid SA ID (checksum failed)";
+            }
+        } else if (cleanValue.length < 5) {
+            return "Invalid ID / Passport Number";
         }
         return "";
     };
@@ -376,7 +380,7 @@ export const ApplicationForm = () => {
                                     <input required name="dob" type="date" className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">ID Number</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">ID / Passport Number</label>
                                     <input
                                         required
                                         name="learnerId"
@@ -460,10 +464,16 @@ export const ApplicationForm = () => {
                                                             setIsPostalSameAsPhysical(e.target.checked);
                                                             if (e.target.checked) {
                                                                 const physicalValue = (formRef.current?.querySelector('input[name="learnerPhysicalAddress"]') as HTMLInputElement)?.value;
+                                                                const physicalCityValue = (formRef.current?.querySelector('input[name="learnerCity"]') as HTMLInputElement)?.value;
                                                                 const postalInput = formRef.current?.querySelector('input[name="learnerPostalAddress"]') as HTMLInputElement;
+                                                                const postalCityInput = formRef.current?.querySelector('input[name="learnerPostalCity"]') as HTMLInputElement;
                                                                 if (postalInput) {
                                                                     postalInput.value = physicalValue || "";
                                                                     setErrors(prev => ({ ...prev, learnerPostalAddress: "" }));
+                                                                }
+                                                                if (postalCityInput) {
+                                                                    postalCityInput.value = physicalCityValue || "";
+                                                                    setErrors(prev => ({ ...prev, learnerPostalCity: "" }));
                                                                 }
                                                             }
                                                         }}
@@ -482,6 +492,20 @@ export const ApplicationForm = () => {
                                             />
                                             {errors.learnerPostalAddress && (
                                                 <p className="text-red-500 text-xs mt-1 flex items-center"><AlertCircle className="w-3 h-3 mr-1" /> {errors.learnerPostalAddress}</p>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">City / Suburb</label>
+                                            <input
+                                                required={!isPostalSameAsPhysical}
+                                                name="learnerPostalCity"
+                                                type="text"
+                                                disabled={isPostalSameAsPhysical}
+                                                className={`w-full px-4 py-2 rounded-lg border focus:ring-primary focus:border-primary ${isPostalSameAsPhysical ? 'bg-gray-50' : ''} ${errors.learnerPostalCity ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                                                onBlur={(e) => setErrors(prev => ({ ...prev, learnerPostalCity: e.target.checkValidity() ? "" : "Postal City/Suburb is required" }))}
+                                            />
+                                            {errors.learnerPostalCity && (
+                                                <p className="text-red-500 text-xs mt-1 flex items-center"><AlertCircle className="w-3 h-3 mr-1" /> {errors.learnerPostalCity}</p>
                                             )}
                                         </div>
                                         <div>
@@ -585,13 +609,9 @@ export const ApplicationForm = () => {
                                     <input name="parent1KnownAs" type="text" className="w-full px-4 py-2 rounded-lg border border-gray-300" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">ID Number</label>
-                                    <input name="parent1Id" type="text" className={`w-full px-4 py-2 rounded-lg border focus:ring-primary focus:border-primary ${errors.parent1Id ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} onBlur={(e) => setErrors(prev => ({ ...prev, parent1Id: e.target.checkValidity() ? "" : "ID Number is required" }))} />
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">ID / Passport Number</label>
+                                    <input name="parent1Id" type="text" className={`w-full px-4 py-2 rounded-lg border focus:ring-primary focus:border-primary ${errors.parent1Id ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} onBlur={(e) => setErrors(prev => ({ ...prev, parent1Id: e.target.checkValidity() ? "" : "ID / Passport Number is required" }))} />
                                     {errors.parent1Id && <p className="text-red-500 text-xs mt-1 flex items-center"><AlertCircle className="w-3 h-3 mr-1" /> {errors.parent1Id}</p>}
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Passport Number (Optional)</label>
-                                    <input name="parent1Passport" type="text" placeholder="For international parents" className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Relationship</label>
@@ -678,8 +698,11 @@ export const ApplicationForm = () => {
                                                             setIsP1PostalSameAsPhysical(e.target.checked);
                                                             if (e.target.checked) {
                                                                 const physicalValue = (formRef.current?.querySelector('input[name="parent1PhysicalAddress"]') as HTMLInputElement)?.value;
+                                                                const physicalCityValue = (formRef.current?.querySelector('input[name="parent1City"]') as HTMLInputElement)?.value;
                                                                 const postalInput = formRef.current?.querySelector('input[name="parent1PostalAddress"]') as HTMLInputElement;
+                                                                const postalCityInput = formRef.current?.querySelector('input[name="parent1PostalCity"]') as HTMLInputElement;
                                                                 if (postalInput) postalInput.value = physicalValue || "";
+                                                                if (postalCityInput) postalCityInput.value = physicalCityValue || "";
                                                             }
                                                         }}
                                                         className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
@@ -689,6 +712,15 @@ export const ApplicationForm = () => {
                                             </label>
                                             <input
                                                 name="parent1PostalAddress"
+                                                type="text"
+                                                disabled={isP1PostalSameAsPhysical}
+                                                className={`w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary ${isP1PostalSameAsPhysical ? 'bg-gray-50' : ''}`}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">City / Suburb</label>
+                                            <input
+                                                name="parent1PostalCity"
                                                 type="text"
                                                 disabled={isP1PostalSameAsPhysical}
                                                 className={`w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary ${isP1PostalSameAsPhysical ? 'bg-gray-50' : ''}`}
@@ -768,12 +800,8 @@ export const ApplicationForm = () => {
                                     <input name="parent2KnownAs" type="text" className="w-full px-4 py-2 rounded-lg border border-gray-300" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">ID Number</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">ID / Passport Number</label>
                                     <input name="parent2Id" type="text" className="w-full px-4 py-2 rounded-lg border border-gray-300" />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Passport Number (Optional)</label>
-                                    <input name="parent2Passport" type="text" placeholder="For international parents" className="w-full px-4 py-2 rounded-lg border border-gray-300" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Relationship</label>
@@ -853,8 +881,11 @@ export const ApplicationForm = () => {
                                                             setIsP2PostalSameAsPhysical(e.target.checked);
                                                             if (e.target.checked) {
                                                                 const physicalValue = (formRef.current?.querySelector('input[name="parent2PhysicalAddress"]') as HTMLInputElement)?.value;
+                                                                const physicalCityValue = (formRef.current?.querySelector('input[name="parent2City"]') as HTMLInputElement)?.value;
                                                                 const postalInput = formRef.current?.querySelector('input[name="parent2PostalAddress"]') as HTMLInputElement;
+                                                                const postalCityInput = formRef.current?.querySelector('input[name="parent2PostalCity"]') as HTMLInputElement;
                                                                 if (postalInput) postalInput.value = physicalValue || "";
+                                                                if (postalCityInput) postalCityInput.value = physicalCityValue || "";
                                                             }
                                                         }}
                                                         className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
@@ -864,6 +895,15 @@ export const ApplicationForm = () => {
                                             </label>
                                             <input
                                                 name="parent2PostalAddress"
+                                                type="text"
+                                                disabled={isP2PostalSameAsPhysical}
+                                                className={`w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary ${isP2PostalSameAsPhysical ? 'bg-gray-50' : ''}`}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">City / Suburb</label>
+                                            <input
+                                                name="parent2PostalCity"
                                                 type="text"
                                                 disabled={isP2PostalSameAsPhysical}
                                                 className={`w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary ${isP2PostalSameAsPhysical ? 'bg-gray-50' : ''}`}
