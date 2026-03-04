@@ -357,7 +357,7 @@ export const ApplicationForm = () => {
                         </div>
                     </div>
                 ) : (
-                    <form ref={formRef} onSubmit={handleSubmit} onInput={saveFormData} className="space-y-6">
+                    <form ref={formRef} onSubmit={handleSubmit} onInput={saveFormData} noValidate className="space-y-6">
                         {/* Honeypot & Protection Fields */}
                         <div className="hidden" aria-hidden="true">
                             <input type="text" name="website_url" tabIndex={-1} autoComplete="off" />
