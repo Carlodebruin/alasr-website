@@ -8,7 +8,7 @@ HOST = "alasr.co.za"
 USER = "alas9"
 PASS = "Nimda123"
 LOCAL_DIR = "out/"
-REMOTE_DIR = "public_html/beta"
+REMOTE_DIR = "public_html"
 
 # Construct rsync command
 # -avz: archive mode, verbose, compress

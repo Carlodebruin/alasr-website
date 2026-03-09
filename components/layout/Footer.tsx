@@ -11,7 +11,7 @@ export const Footer = () => {
                     <div className="col-span-1 md:col-span-1">
                         <Link href="/" className="inline-block group">
                             <img
-                                src="/beta/images/alasr-logo-light-new.png"
+                                src="/images/alasr-logo-light-new.png"
                                 alt={siteConfig.siteName}
                                 className="h-24 w-auto mb-2 object-contain object-left opacity-90 group-hover:opacity-100 transition-opacity"
                             />
@@ -78,12 +78,12 @@ export const Footer = () => {
                     <p className="text-base text-gray-500">&copy; {new Date().getFullYear()} {siteConfig.siteName}. All rights reserved.</p>
                     <div className="flex space-x-8 items-center mt-6 md:mt-0">
                         <img
-                            src="/beta/images/umalusi-new.png"
+                            src="/images/umalusi-new.png"
                             alt="Umalusi Accredited"
                             className="h-20 w-auto object-contain brightness-0 invert opacity-80 hover:opacity-100 transition-opacity"
                         />
                         <img
-                            src="/beta/images/gauteng-department-of-education-new.png"
+                            src="/images/gauteng-department-of-education-new.png"
                             alt="Gauteng Department of Education"
                             className="h-20 w-auto object-contain brightness-0 invert opacity-80 hover:opacity-100 transition-opacity"
                         />

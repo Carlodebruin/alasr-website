@@ -24,7 +24,7 @@ export const InstagramFeed = () => {
                         <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 p-[3px] mb-4 group-hover:scale-105 transition-transform">
                             <div className="bg-white w-full h-full rounded-full p-1">
                                 {/* Use logo as avatar since we don't have a live profile pic URL */}
-                                <img src="/beta/images/logo-dark.png" alt="Profile" className="w-full h-full object-contain rounded-full bg-gray-50" />
+                                <img src="/images/logo-dark.png" alt="Profile" className="w-full h-full object-contain rounded-full bg-gray-50" />
                             </div>
                         </div>
 

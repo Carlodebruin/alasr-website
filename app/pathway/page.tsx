@@ -253,7 +253,7 @@ export default function LibraryPage() {
                         <audio
                             controls
                             className="w-full h-8 brightness-90 contrast-125"
-                            src="/beta/audio/pathway-podcast.wav"
+                            src="/audio/pathway-podcast.wav"
                         >
                             Your browser does not support the audio element.
                         </audio>

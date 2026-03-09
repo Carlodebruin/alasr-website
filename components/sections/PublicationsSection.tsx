@@ -148,7 +148,7 @@ export const PublicationsSection = () => {
 
                                 <div className="flex flex-wrap gap-3 border-t border-surface pt-5">
                                     <a
-                                        href="/beta/documents/pathway-to-light.pdf"
+                                        href="/documents/pathway-to-light.pdf"
                                         download="Pathway_To_Light_Guide.pdf"
                                         className="inline-flex items-center gap-2 px-4 py-2 bg-surface text-primary border border-secondary/20 rounded-full font-bold text-xs hover:bg-white transition-all group"
                                     >
@@ -157,7 +157,7 @@ export const PublicationsSection = () => {
                                         <Download size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                                     </a>
                                     <a
-                                        href="/beta/audio/pathway-podcast.wav"
+                                        href="/audio/pathway-podcast.wav"
                                         download="Pathway_To_Light_Podcast.wav"
                                         className="inline-flex items-center gap-2 px-4 py-2 bg-surface text-primary border border-secondary/20 rounded-full font-bold text-xs hover:bg-white transition-all group"
                                     >

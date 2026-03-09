@@ -314,7 +314,7 @@ export const ApplicationForm = () => {
             };
 
             setMessage("Securing your application and generating your branded legal contract... This can take 1 to 3 minutes depending on your internet speed and file sizes. Please do not close this window.");
-            const response = await fetch("/beta/api/applications.php", {
+            const response = await fetch("/api/applications.php", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

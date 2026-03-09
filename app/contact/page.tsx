@@ -20,7 +20,7 @@ export default function Contact() {
         const data = Object.fromEntries(formData.entries());
 
         try {
-            const response = await fetch("/beta/api/contact.php", {
+            const response = await fetch("/api/contact.php", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

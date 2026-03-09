@@ -342,7 +342,7 @@ export function BookCoverCanvas() {
                 >
                     <div className="flex flex-wrap justify-center gap-4 pointer-events-auto">
                         <a
-                            href="/beta/audio/pathway-podcast.wav"
+                            href="/audio/pathway-podcast.wav"
                             download="Pathway_To_Light_Podcast.wav"
                             className="flex items-center gap-2.5 px-6 py-2.5 rounded-full bg-secondary text-white font-bold text-sm shadow-lg hover:shadow-secondary/20 hover:scale-105 transition-all group"
                         >
@@ -350,7 +350,7 @@ export function BookCoverCanvas() {
                             Download Podcast
                         </a>
                         <a
-                            href="/beta/documents/pathway-to-light.pdf"
+                            href="/documents/pathway-to-light.pdf"
                             download="Pathway_To_Light_Guide.pdf"
                             className="flex items-center gap-2.5 px-6 py-2.5 rounded-full border border-white/20 bg-white/5 backdrop-blur-md text-white font-bold text-sm hover:bg-white/10 hover:border-secondary/40 transition-all group"
                         >

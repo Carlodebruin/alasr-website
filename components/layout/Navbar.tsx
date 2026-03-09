@@ -28,7 +28,7 @@ export const Navbar = () => {
                             <div className="flex-shrink-0 flex items-center">
                                 <Link href="/" className="flex items-center space-x-2">
                                     <img
-                                        src="/beta/images/alasr-logo-new.png"
+                                        src="/images/alasr-logo-new.png"
                                         alt="Al-Asr Educational Institute"
                                         className="md:h-20 h-14 w-auto object-contain"
                                     />
