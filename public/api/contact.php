@@ -5,37 +5,37 @@ header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Get JSON input
-    $json = file_get_contents('php://input');
-    $data = json_decode($json, true);
+  // Get JSON input
+  $json = file_get_contents('php://input');
+  $data = json_decode($json, true);
 
-    if (!$data) {
-        // Fallback to POST fields
-        $data = $_POST;
-    }
+  if (!$data) {
+    // Fallback to POST fields
+    $data = $_POST;
+  }
 
-    $name = $data['name'] ?? '';
-    $email = $data['email'] ?? '';
-    $message = $data['message'] ?? '';
+  $name = $data['name'] ?? '';
+  $email = $data['email'] ?? '';
+  $message = $data['message'] ?? '';
 
-    if (empty($name) || empty($email) || empty($message)) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Missing required fields']);
-        exit;
-    }
+  if (empty($name) || empty($email) || empty($message)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Missing required fields']);
+    exit;
+  }
 
-    // Recipients
-    $to = 'reception@alasr.co.za, admin@alasr.co.za';
-    $subject = "Contact Form: $name";
+  // Recipients
+  $to = 'reception@alasr.co.za, admin@alasr.co.za';
+  $subject = "Contact Form: $name";
 
-    // Headers
-    $headers = "From: Al-Asr Website <no-reply@alasr.co.za>\r\n";
-    $headers .= "Reply-To: $email\r\n";
-    $headers .= "X-Mailer: PHP/" . phpversion() . "\r\n";
-    $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
+  // Headers
+  $headers = "From: Al-Asr Website <no-reply@alasr.co.za>\r\n";
+  $headers .= "Reply-To: $email\r\n";
+  $headers .= "X-Mailer: PHP/" . phpversion() . "\r\n";
+  $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
 
-    // Email Body
-    $emailBody = "
+  // Email Body
+  $emailBody = "
     <html>
     <head>
       <title>New Contact Message</title>
@@ -56,14 +56,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </html>
     ";
 
-    // Send Email
-    if (mail($to, $subject, $emailBody, $headers)) {
-        echo json_encode(['success' => true, 'message' => 'Message sent successfully']);
-    } else {
-        http_response_code(500);
-        echo json_encode(['error' => 'Failed to send message. Please try again later.']);
-    }
-} else {
-    http_response_code(405);
-    echo json_encode(['error' => 'Method not allowed']);
+  // Send Email
+  $fromEmail = "no-reply@alasr.co.za";
+  if (mail($to, $subject, $emailBody, $headers, "-f$fromEmail")) {
+    echo json_encode(['success' => true, 'message' => 'Message sent successfully']);
+  }
+  else {
+    http_response_code(500);
+    echo json_encode(['error' => 'Failed to send message. Please try again later.']);
+  }
+}
+else {
+  http_response_code(405);
+  echo json_encode(['error' => 'Method not allowed']);
 }

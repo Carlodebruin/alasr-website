@@ -13,7 +13,6 @@ const navLinks = [
     { name: 'Academics', href: '/academics' },
     { name: 'Admissions', href: '/admissions' },
     { name: 'Contact', href: '/contact' },
-    { name: 'Donate', href: '/donations' },
 ];
 
 export const Navbar = () => {
@@ -24,14 +23,14 @@ export const Navbar = () => {
             <AnnouncementBar />
             <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50 transition-all duration-300 font-sans">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between h-24">
+                    <div className="flex justify-between md:h-24 h-20">
                         <div className="flex">
                             <div className="flex-shrink-0 flex items-center">
                                 <Link href="/" className="flex items-center space-x-2">
                                     <img
                                         src="/beta/images/alasr-logo-new.png"
                                         alt="Al-Asr Educational Institute"
-                                        className="h-20 w-auto object-contain"
+                                        className="md:h-20 h-14 w-auto object-contain"
                                     />
                                 </Link>
                             </div>
@@ -63,6 +62,14 @@ export const Navbar = () => {
                                 className="shadow-md hover:shadow-xl transition-all duration-300 py-3 px-8 text-lg font-bold transform hover:-translate-y-0.5"
                             >
                                 Donate
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="lg"
+                                href="/pathway"
+                                className="shadow-md hover:shadow-xl transition-all duration-300 py-3 px-8 text-lg font-bold transform hover:-translate-y-0.5 border-primary text-primary hover:bg-primary/5"
+                            >
+                                Pathway
                             </Button>
                         </div>
                         <div className="-mr-2 flex items-center md:hidden">
@@ -97,7 +104,7 @@ export const Navbar = () => {
                                     size="lg"
                                     fullWidth
                                     href="/admissions"
-                                    className="justify-center shadow-lg py-4 text-xl font-bold"
+                                    className="justify-center shadow-lg py-3 text-lg font-bold"
                                     onClick={() => setIsOpen(false)}
                                 >
                                     Apply Now
@@ -107,10 +114,20 @@ export const Navbar = () => {
                                     size="lg"
                                     fullWidth
                                     href="/donations"
-                                    className="justify-center shadow-lg py-4 text-xl font-bold"
+                                    className="justify-center shadow-lg py-3 text-lg font-bold"
                                     onClick={() => setIsOpen(false)}
                                 >
                                     Donate
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="lg"
+                                    fullWidth
+                                    href="/pathway"
+                                    className="justify-center shadow-lg py-3 text-lg font-bold border-primary text-primary hover:bg-primary/5"
+                                    onClick={() => setIsOpen(false)}
+                                >
+                                    Pathway
                                 </Button>
                             </div>
                         </div>

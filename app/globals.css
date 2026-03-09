@@ -20,9 +20,9 @@
   --color-primary: var(--color-primary);
   --color-secondary: var(--color-secondary);
   --color-surface: var(--color-surface);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
-  --font-serif: var(--font-geist-sans);
+  --font-serif: var(--font-lora);
 }
 
 html,
@@ -32,4 +32,31 @@ body {
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   overflow-x: hidden;
   width: 100%;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  header,
+  footer,
+  nav {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  /* Force background colors in some browsers */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
 }

@@ -5,7 +5,7 @@ import { ArrowRight, Moon } from 'lucide-react';
 
 export const AnnouncementBar = () => {
     return (
-        <div className="bg-primary text-white py-3 px-4 relative overflow-hidden group">
+        <div className="bg-primary text-white py-3 px-4 relative overflow-hidden group no-print">
             <div className="absolute inset-0 bg-secondary/10 group-hover:bg-secondary/20 transition-colors"></div>
             <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-center relative z-10 text-center gap-2">
                 <div className="flex items-center space-x-2 text-sm md:text-base font-medium">

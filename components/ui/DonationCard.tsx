@@ -21,7 +21,7 @@ export const DonationCard = ({ title, description, icon: Icon, href, variant = '
                     {badge}
                 </div>
             )}
-            <div className="p-8 flex flex-col h-full">
+            <div className="p-6 md:p-8 flex flex-col h-full">
                 {Icon && (
                     <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
                         <Icon className="h-6 w-6 text-primary" />
@@ -38,7 +38,7 @@ export const DonationCard = ({ title, description, icon: Icon, href, variant = '
                         variant={variant}
                         size="lg"
                         fullWidth
-                        className="shadow-sm hover:shadow-md py-6 text-lg"
+                        className="shadow-sm hover:shadow-md py-4 md:py-6 text-base md:text-lg"
                     >
                         {amountPrefix ? 'Donate' : 'Donate Now'}
                     </Button>

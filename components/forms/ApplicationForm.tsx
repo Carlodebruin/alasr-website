@@ -10,6 +10,7 @@ type FormStep = 1 | 2 | 3 | 4 | 5 | 6;
 interface Sibling {
     name: string;
     grade: string;
+    type: "Current" | "Applying";
 }
 
 export const ApplicationForm = () => {
@@ -74,7 +75,9 @@ export const ApplicationForm = () => {
     const [siblings, setSiblings] = useState<Sibling[]>([]);
     const [isPostalSameAsPhysical, setIsPostalSameAsPhysical] = useState(false);
     const [isP1PostalSameAsPhysical, setIsP1PostalSameAsPhysical] = useState(false);
+    const [isP1SameAsLearner, setIsP1SameAsLearner] = useState(false);
     const [isP2PostalSameAsPhysical, setIsP2PostalSameAsPhysical] = useState(false);
+    const [isP2SameAsLearner, setIsP2SameAsLearner] = useState(false);
     const [feePayer, setFeePayer] = useState("");
     const [fileNames, setFileNames] = useState<Record<string, string>>({});
     const [acceptances, setAcceptances] = useState({
@@ -86,6 +89,7 @@ export const ApplicationForm = () => {
     const [acceptanceLogs, setAcceptanceLogs] = useState<Record<string, string>>({});
     const [feePaymentTerm, setFeePaymentTerm] = useState("");
     const [resultRef, setResultRef] = useState("");
+    const [submittedData, setSubmittedData] = useState<Record<string, any> | null>(null);
 
     const handleAcceptanceChange = (key: keyof typeof acceptances) => {
         setAcceptances(prev => {
@@ -175,7 +179,7 @@ export const ApplicationForm = () => {
     }, [step, siblings]);
 
     const addSibling = () => {
-        setSiblings([...siblings, { name: "", grade: "" }]);
+        setSiblings([...siblings, { name: "", grade: "", type: "Current" }]);
     };
 
     const removeSibling = (index: number) => {
@@ -184,10 +188,22 @@ export const ApplicationForm = () => {
         setSiblings(newSiblings);
     };
 
-    const handleSiblingChange = (index: number, field: keyof Sibling, value: string) => {
+    const handleSiblingChange = (index: number, field: keyof Sibling, value: any) => {
         const newSiblings = [...siblings];
         newSiblings[index][field] = value;
         setSiblings(newSiblings);
+    };
+
+    const fileToBase64 = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => {
+                const base64String = (reader.result as string).split(',')[1];
+                resolve(base64String);
+            };
+            reader.onerror = (error) => reject(error);
+        });
     };
 
     const nextStep = () => {
@@ -243,30 +259,67 @@ export const ApplicationForm = () => {
             return;
         }
 
-        setIsLoading(true);
-        setStatus("idle");
-        setMessage("");
-
         const formData = new FormData(e.currentTarget);
-        formData.append("siblings", JSON.stringify(siblings));
-        formData.append("form_start_time", startTime);
-
-        // Add Audit Trail for Clickwrap Agreement
-        const auditLog = {
-            timestamp: new Date().toISOString(),
-            userAgent: navigator.userAgent,
-            checkboxLogs: acceptanceLogs,
-            termsVersion: "v1.0",
-            parentName: `${formData.get('parent1FirstName')} ${formData.get('parent1Surname')}`,
-            parentEmail: formData.get('parent1Email')
-        };
-        formData.append("audit_log", JSON.stringify(auditLog));
-        formData.append("feePaymentTerm", feePaymentTerm);
+        const fileInputs = Array.from(e.currentTarget.querySelectorAll('input[type="file"]')) as HTMLInputElement[];
 
         try {
+            setIsLoading(true);
+            setStatus("idle");
+            setMessage("Processing documents... Please wait.");
+
+            // Process ALL files in parallel for speed
+            const processedFiles = await Promise.all(
+                fileInputs.flatMap(input => {
+                    if (input.files && input.files[0]) {
+                        const file = input.files[0];
+                        return fileToBase64(file).then(base64Data => ({
+                            name: file.name,
+                            mimeType: file.type,
+                            data: base64Data,
+                            field: input.name,
+                            size: file.size
+                        }));
+                    }
+                    return [];
+                })
+            );
+
+            // Check total size (Google Apps Script limit is ~6MB total payload)
+            const totalSize = processedFiles.reduce((acc, f) => acc + f.size, 0);
+            if (totalSize > 5 * 1024 * 1024) { // 5MB limit to be safe
+                throw new Error("Files are too large. Please ensure total attachments are under 5MB.");
+            }
+
+            const allFormData = Object.fromEntries(formData.entries());
+            // Remove the raw file objects from allData as they are handled in processedFiles
+            processedFiles.forEach(pf => delete allFormData[pf.field]);
+
+            // Add Audit Trail for Clickwrap Agreement
+            const auditLog = {
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                checkboxLogs: acceptanceLogs,
+                termsVersion: "v1.0",
+                parentName: `${allFormData.parent1FirstName} ${allFormData.parent1Surname}`,
+                parentEmail: allFormData.parent1Email
+            };
+
+            const payload = {
+                allData: allFormData,
+                siblings: siblings,
+                form_start_time: startTime,
+                audit_log: auditLog,
+                feePaymentTerm: feePaymentTerm,
+                files: processedFiles
+            };
+
+            setMessage("Securing your application and generating your branded legal contract... This can take 1 to 3 minutes depending on your internet speed and file sizes. Please do not close this window.");
             const response = await fetch("/beta/api/applications.php", {
                 method: "POST",
-                body: formData,
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload),
             });
 
             const text = await response.text();
@@ -279,6 +332,9 @@ export const ApplicationForm = () => {
             }
 
             if (response.ok && result.success) {
+                // Capture data for printing before reset
+                setSubmittedData({ ...payload.allData, siblings, reference: result.ref });
+
                 setStatus("success");
                 setResultRef(result.ref || "Pending");
                 setMessage(`Application submitted successfully! Ref: ${result.ref || 'Pending'}. We will contact you shortly.`);
@@ -312,7 +368,7 @@ export const ApplicationForm = () => {
     return (
         <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
             {/* Progress Bar */}
-            <div className="bg-gray-50 border-b border-gray-100 p-4">
+            <div className="bg-gray-50 border-b border-gray-100 p-4 no-print">
                 <div className="flex items-center justify-between max-w-5xl mx-auto">
                     {steps.map((s) => (
                         <div key={s.num} className="flex flex-col items-center z-10 mx-1">
@@ -328,36 +384,151 @@ export const ApplicationForm = () => {
             <div className="p-6 md:p-8">
                 {status === "success" ? (
                     <div className="text-center py-12 px-4">
-                        <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
-                            <CheckCircle className="w-10 h-10" />
+                        <div className="no-print">
+                            <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
+                                <CheckCircle className="w-10 h-10" />
+                            </div>
+                            <h3 className="text-3xl font-bold text-gray-900 mb-2">Application Submitted!</h3>
+
+                            <div className="bg-gray-50 border border-gray-200 rounded-xl p-8 my-8 max-w-sm mx-auto shadow-inner">
+                                <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-black mb-2 block">Reference Number</span>
+                                <div className="text-3xl font-mono font-bold text-primary tracking-tighter">{resultRef}</div>
+                            </div>
+
+                            <p className="text-gray-600 mb-8 max-w-md mx-auto leading-relaxed">
+                                Thank you for applying. A confirmation copy has been emailed to the Parent 1 email address provided.
+                                Our admissions team will review your application and contact you shortly.
+                            </p>
                         </div>
-                        <h3 className="text-3xl font-bold text-gray-900 mb-2">Application Submitted!</h3>
 
-                        <div className="bg-gray-50 border border-gray-200 rounded-xl p-8 my-8 max-w-sm mx-auto shadow-inner">
-                            <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-black mb-2 block">Reference Number</span>
-                            <div className="text-3xl font-mono font-bold text-primary tracking-tighter">{resultRef}</div>
-                        </div>
-
-                        <p className="text-gray-600 mb-8 max-w-md mx-auto leading-relaxed">
-                            Thank you for applying. A confirmation copy has been emailed to the Parent 1 email address provided.
-                            Our admissions team will review your application and contact you shortly.
-                        </p>
-
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 border-t pt-8">
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 border-t pt-8 no-print">
                             <Button onClick={() => window.print()} className="flex items-center shadow-lg shadow-primary/20">
-                                <Download className="w-4 h-4 mr-2" /> Download Application
+                                <Download className="w-4 h-4 mr-2" /> Download / Print Application
                             </Button>
                             <Button onClick={() => {
                                 setStatus("idle");
                                 setAcceptances({ declaration: false, contract: false, indemnity: false, fees: false });
                                 setFeePayer("");
+                                setSubmittedData(null);
                             }} variant="outline">
                                 Start Another
                             </Button>
                         </div>
+
+                        {/* Printable Application View */}
+                        {submittedData && (
+                            <div className="hidden print:block text-left mt-12 border-t pt-12">
+                                <div className="flex justify-between items-start mb-8 border-b-2 border-primary pb-4">
+                                    <div>
+                                        <h1 className="text-2xl font-bold text-primary uppercase tracking-tighter">Al-Asr Educational Institute</h1>
+                                        <p className="text-xs text-gray-500">370 Ganges Street, Claudius, Centurion | +27 12 374 5546</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-[10px] uppercase font-bold text-gray-400">Application Reference</div>
+                                        <div className="text-xl font-mono font-bold text-primary">{resultRef}</div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-8">
+                                    <section>
+                                        <h2 className="text-sm font-bold uppercase bg-gray-100 p-2 mb-4 border-l-4 border-primary">1. Learner Details</h2>
+                                        <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm italic">
+                                            <div><span className="font-bold uppercase not-italic text-[10px] text-gray-500 block">Surname:</span> {submittedData.learnerSurname}</div>
+                                            <div><span className="font-bold uppercase not-italic text-[10px] text-gray-500 block">First Name(s):</span> {submittedData.learnerFirstName || submittedData.learnerName}</div>
+                                            <div><span className="font-bold uppercase not-italic text-[10px] text-gray-500 block">ID / Passport:</span> {submittedData.learnerId}</div>
+                                            <div><span className="font-bold uppercase not-italic text-[10px] text-gray-500 block">Date of Birth:</span> {submittedData.dob}</div>
+                                            <div><span className="font-bold uppercase not-italic text-[10px] text-gray-500 block">Grade Applying For:</span> {submittedData.grade} ({submittedData.academicYear})</div>
+                                            <div><span className="font-bold uppercase not-italic text-[10px] text-gray-500 block">Home Language:</span> {submittedData.homeLanguage}</div>
+                                            <div className="col-span-2"><span className="font-bold uppercase not-italic text-[10px] text-gray-500 block">Physical Address:</span> {submittedData.learnerPhysicalAddress} {submittedData.learnerCity}</div>
+                                        </div>
+                                    </section>
+
+                                    {submittedData.siblings && submittedData.siblings.length > 0 && (
+                                        <section>
+                                            <h2 className="text-sm font-bold uppercase bg-gray-100 p-2 mb-4 border-l-4 border-primary">2. Siblings at Al-Asr</h2>
+                                            <div className="space-y-2">
+                                                {submittedData.siblings.map((sib: any, i: number) => (
+                                                    <div key={i} className="text-sm grid grid-cols-3 border-b border-gray-50 pb-1">
+                                                        <span>{sib.name}</span>
+                                                        <span className="text-center text-primary font-bold text-[10px] uppercase">{sib.type}</span>
+                                                        <span className="text-right font-medium">Grade {sib.grade}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </section>
+                                    )}
+
+                                    <section>
+                                        <h2 className="text-sm font-bold uppercase bg-gray-100 p-2 mb-4 border-l-4 border-primary">3. Parent / Guardian Details</h2>
+                                        <div className="grid grid-cols-2 gap-8">
+                                            <div className="space-y-2">
+                                                <h3 className="text-xs font-bold border-b pb-1">Primary Parent (P1)</h3>
+                                                <div className="text-sm italic">
+                                                    <div>{submittedData.parent1Title} {submittedData.parent1FirstName} {submittedData.parent1Surname}</div>
+                                                    <div className="not-italic text-[10px] text-gray-500">{submittedData.parent1Rel} | {submittedData.parent1Id}</div>
+                                                    <div className="mt-1 font-medium not-italic">{submittedData.parent1Email}</div>
+                                                    <div className="not-italic">{submittedData.parent1Mobile}</div>
+                                                </div>
+                                            </div>
+                                            {submittedData.parent2FirstName && (
+                                                <div className="space-y-2">
+                                                    <h3 className="text-xs font-bold border-b pb-1">Secondary Parent (P2)</h3>
+                                                    <div className="text-sm italic">
+                                                        <div>{submittedData.parent2Title} {submittedData.parent2FirstName} {submittedData.parent2Surname}</div>
+                                                        <div className="not-italic text-[10px] text-gray-500">{submittedData.parent2Rel} | {submittedData.parent2Id}</div>
+                                                        <div className="mt-1 font-medium not-italic">{submittedData.parent2Email}</div>
+                                                        <div className="not-italic">{submittedData.parent2Mobile}</div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </section>
+
+                                    <section>
+                                        <h2 className="text-sm font-bold uppercase bg-gray-100 p-2 mb-4 border-l-4 border-primary">4. Medical & Emergency</h2>
+                                        <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm italic">
+                                            <div className="col-span-2"><span className="font-bold uppercase not-italic text-[10px] text-gray-500 block">Allergies/Disabilities:</span> {submittedData.allergies || 'None'} / {submittedData.disabilities || 'None'}</div>
+                                            <div><span className="font-bold uppercase not-italic text-[10px] text-gray-500 block">Emergency Contact:</span> {submittedData.emergencyName}</div>
+                                            <div><span className="font-bold uppercase not-italic text-[10px] text-gray-500 block">Relationship:</span> {submittedData.emergencyRel}</div>
+                                            <div><span className="font-bold uppercase not-italic text-[10px] text-gray-500 block">Emergency Phone:</span> {submittedData.emergencyPhone}</div>
+                                        </div>
+                                    </section>
+
+                                    <section>
+                                        <h2 className="text-sm font-bold uppercase bg-gray-100 p-2 mb-4 border-l-4 border-primary">5. Terms & Conditions Accepted</h2>
+                                        <div className="space-y-4 text-[11px] text-gray-600 leading-relaxed border p-4 rounded-lg bg-gray-50/50">
+                                            <p><strong>1. Application Declaration:</strong> I confirm that all information provided in this application is true, complete and accurate. I understand that submission of this form does not guarantee acceptance.</p>
+                                            <p><strong>2. Enrollment Contract:</strong> The learner and parents agree to abide by the school's Code of Conduct, policies, and regulations as amended from time to time. Serious breaches of the code may result in disciplinary action. School fees are payable in advance. Parents/Guardians are jointly and severally liable for the payment of all fees and other charges derived from the learner's education.</p>
+                                            <p><strong>3. Indemnity & Medical Consent:</strong> The school, its staff, and agents shall not be liable for any loss, damage, or injury sustained by the learner while on the school premises or during school activities. I hereby cede parental authority to the Principal or their designate in the event of a medical emergency where I cannot be contacted immediately, authorizing necessary medical treatment.</p>
+                                            <p><strong>4. Fee Payment Agreement ({submittedData.feePaymentTerm}):</strong> I undertake to pay fees as per the selected payment term.</p>
+                                        </div>
+                                    </section>
+
+                                    <div className="pt-8 border-t text-[9px] text-gray-400 text-center italic">
+                                        This is an electronically generated summary of the application submitted via the Al-Asr and InnateSoma Portal on {new Date().toLocaleDateString()}.
+                                        <br />
+                                        Audit: {submittedData.learnerSurname} | IP: {resultRef} | Accepted: All Declarations.
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <form ref={formRef} onSubmit={handleSubmit} onInput={saveFormData} noValidate className="space-y-6">
+                        {status === "error" && (
+                            <div className="p-4 bg-red-50 border border-red-100 text-red-700 rounded-lg flex items-center animate-in slide-in-from-top-2">
+                                <AlertCircle className="w-5 h-5 mr-3 shrink-0" />
+                                <span className="text-sm font-medium">{message}</span>
+                            </div>
+                        )}
+
+                        {isLoading && (
+                            <div className="p-4 bg-blue-50 border border-blue-100 text-blue-700 rounded-lg flex items-center animate-in slide-in-from-top-2">
+                                <Loader2 className="w-5 h-5 mr-3 shrink-0 animate-spin" />
+                                <span className="text-sm font-medium">{message}</span>
+                            </div>
+                        )}
+
                         {/* Honeypot & Protection Fields */}
                         <div className="hidden" aria-hidden="true">
                             <input type="text" name="website_url" tabIndex={-1} autoComplete="off" />
@@ -532,45 +703,79 @@ export const ApplicationForm = () => {
                                     </div>
                                 </div>
 
-                                <div className="md:col-span-2 border-t pt-4 mt-2">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <label className="block text-sm font-medium text-gray-700">Siblings at Al-Asr (or applying)</label>
-                                        <Button type="button" size="sm" variant="outline" onClick={addSibling} className="text-xs">
+                                <div className="md:col-span-2 border-t pt-6 mt-4 bg-gray-50/50 p-4 rounded-xl border border-dashed border-gray-200">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+                                        <div>
+                                            <h4 className="text-sm font-bold text-gray-900">Siblings at Al-Asr</h4>
+                                            <p className="text-xs text-gray-500">Do you have other children currently at the school or also applying?</p>
+                                        </div>
+                                        <Button
+                                            type="button"
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={addSibling}
+                                            className="text-xs border-primary/30 text-primary hover:bg-primary/5 h-8"
+                                        >
                                             <Plus className="w-3 h-3 mr-1" /> Add Sibling
                                         </Button>
                                     </div>
 
-                                    {siblings.length === 0 && (
-                                        <p className="text-xs text-gray-500 italic">No siblings added. Click "Add Sibling" if relevant.</p>
+                                    {siblings.length === 0 ? (
+                                        <div className="text-center py-4 border border-dashed border-gray-200 rounded-lg bg-white/50">
+                                            <p className="text-xs text-gray-400 italic">No siblings listed. Click "Add Sibling" if applicable.</p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {siblings.map((sibling, index) => (
+                                                <div key={index} className="flex gap-3 items-start animate-in fade-in slide-in-from-top-1 bg-white p-3 rounded-lg shadow-sm border border-gray-100">
+                                                    <div className="flex-1">
+                                                        <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Full Name</label>
+                                                        <input
+                                                            placeholder="Sibling's Full Name"
+                                                            value={sibling.name}
+                                                            onChange={(e) => handleSiblingChange(index, "name", e.target.value)}
+                                                            className="w-full px-3 py-2 rounded border border-gray-300 text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all"
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div className="w-32">
+                                                        <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Status</label>
+                                                        <select
+                                                            value={sibling.type}
+                                                            onChange={(e) => handleSiblingChange(index, "type" as any, e.target.value)}
+                                                            className="w-full px-3 py-2 rounded border border-gray-300 text-sm focus:ring-1 focus:ring-primary focus:border-primary bg-white transition-all font-medium text-primary"
+                                                            required
+                                                        >
+                                                            <option value="Current">At School</option>
+                                                            <option value="Applying">Applying</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className="w-24">
+                                                        <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Grade</label>
+                                                        <select
+                                                            value={sibling.grade}
+                                                            onChange={(e) => handleSiblingChange(index, "grade", e.target.value)}
+                                                            className="w-full px-3 py-2 rounded border border-gray-300 text-sm focus:ring-1 focus:ring-primary focus:border-primary bg-white transition-all"
+                                                            required
+                                                        >
+                                                            <option value="">Grade</option>
+                                                            <option value="RR">RR</option>
+                                                            <option value="R">R</option>
+                                                            {[...Array(12)].map((_, i) => <option key={i} value={i + 1}>{i + 1}</option>)}
+                                                        </select>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeSibling(index)}
+                                                        className="mt-6 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
+                                                        title="Remove Sibling"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
                                     )}
-
-                                    <div className="space-y-3">
-                                        {siblings.map((sibling, index) => (
-                                            <div key={index} className="flex gap-2 items-start animate-in fade-in slide-in-from-top-1">
-                                                <input
-                                                    placeholder="Sibling Name"
-                                                    value={sibling.name}
-                                                    onChange={(e) => handleSiblingChange(index, "name", e.target.value)}
-                                                    className="flex-1 px-3 py-2 rounded border border-gray-300 text-sm"
-                                                    required
-                                                />
-                                                <input
-                                                    placeholder="Grade"
-                                                    value={sibling.grade}
-                                                    onChange={(e) => handleSiblingChange(index, "grade", e.target.value)}
-                                                    className="w-24 px-3 py-2 rounded border border-gray-300 text-sm"
-                                                    required
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeSibling(index)}
-                                                    className="p-2 text-red-500 hover:text-red-700"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -668,7 +873,41 @@ export const ApplicationForm = () => {
                                 </div>
 
                                 <div className="md:col-span-2 border-t pt-4">
-                                    <h4 className="text-sm font-bold text-gray-900 mb-4">Parent 1 Address Details</h4>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h4 className="text-sm font-bold text-gray-900">Parent 1 Address Details</h4>
+                                        <div className="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                id="p1SameAsLearner"
+                                                checked={isP1SameAsLearner}
+                                                onChange={(e) => {
+                                                    setIsP1SameAsLearner(e.target.checked);
+                                                    if (e.target.checked) {
+                                                        const physicalValue = (formRef.current?.querySelector('[name="learnerPhysicalAddress"]') as HTMLTextAreaElement)?.value;
+                                                        const cityValue = (formRef.current?.querySelector('input[name="learnerCity"]') as HTMLInputElement)?.value;
+                                                        const codeValue = (formRef.current?.querySelector('input[name="learnerPostalCode"]') as HTMLInputElement)?.value;
+
+                                                        const p1Physical = formRef.current?.querySelector('[name="parent1PhysicalAddress"]') as HTMLTextAreaElement;
+                                                        const p1City = formRef.current?.querySelector('input[name="parent1City"]') as HTMLInputElement;
+                                                        const p1Code = formRef.current?.querySelector('input[name="parent1PostalCode"]') as HTMLInputElement;
+
+                                                        if (p1Physical) p1Physical.value = physicalValue || "";
+                                                        if (p1City) p1City.value = cityValue || "";
+                                                        if (p1Code) p1Code.value = codeValue || "";
+
+                                                        if (isP1PostalSameAsPhysical) {
+                                                            const p1Postal = formRef.current?.querySelector('[name="parent1PostalAddress"]') as HTMLTextAreaElement;
+                                                            const p1PostalCity = formRef.current?.querySelector('input[name="parent1PostalCity"]') as HTMLInputElement;
+                                                            if (p1Postal) p1Postal.value = physicalValue || "";
+                                                            if (p1PostalCity) p1PostalCity.value = cityValue || "";
+                                                        }
+                                                    }
+                                                }}
+                                                className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
+                                            />
+                                            <label htmlFor="p1SameAsLearner" className="ml-2 text-xs font-medium text-primary">Same as Learner</label>
+                                        </div>
+                                    </div>
                                     <div className="grid md:grid-cols-2 gap-6">
                                         <div className="md:col-span-2">
                                             <label className="block text-sm font-medium text-gray-700 mb-1">Physical Address</label>
@@ -851,7 +1090,41 @@ export const ApplicationForm = () => {
                                 </div>
 
                                 <div className="md:col-span-2 border-t pt-4">
-                                    <h4 className="text-sm font-bold text-gray-900 mb-4">Parent 2 Address Details (If different)</h4>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h4 className="text-sm font-bold text-gray-900">Parent 2 Address Details (If different)</h4>
+                                        <div className="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                id="p2SameAsLearner"
+                                                checked={isP2SameAsLearner}
+                                                onChange={(e) => {
+                                                    setIsP2SameAsLearner(e.target.checked);
+                                                    if (e.target.checked) {
+                                                        const physicalValue = (formRef.current?.querySelector('[name="learnerPhysicalAddress"]') as HTMLTextAreaElement)?.value;
+                                                        const cityValue = (formRef.current?.querySelector('input[name="learnerCity"]') as HTMLInputElement)?.value;
+                                                        const codeValue = (formRef.current?.querySelector('input[name="learnerPostalCode"]') as HTMLInputElement)?.value;
+
+                                                        const p2Physical = formRef.current?.querySelector('[name="parent2PhysicalAddress"]') as HTMLTextAreaElement;
+                                                        const p2City = formRef.current?.querySelector('input[name="parent2City"]') as HTMLInputElement;
+                                                        const p2Code = formRef.current?.querySelector('input[name="parent2PostalCode"]') as HTMLInputElement;
+
+                                                        if (p2Physical) p2Physical.value = physicalValue || "";
+                                                        if (p2City) p2City.value = cityValue || "";
+                                                        if (p2Code) p2Code.value = codeValue || "";
+
+                                                        if (isP2PostalSameAsPhysical) {
+                                                            const p2Postal = formRef.current?.querySelector('[name="parent2PostalAddress"]') as HTMLTextAreaElement;
+                                                            const p2PostalCity = formRef.current?.querySelector('input[name="parent2PostalCity"]') as HTMLInputElement;
+                                                            if (p2Postal) p2Postal.value = physicalValue || "";
+                                                            if (p2PostalCity) p2PostalCity.value = cityValue || "";
+                                                        }
+                                                    }
+                                                }}
+                                                className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
+                                            />
+                                            <label htmlFor="p2SameAsLearner" className="ml-2 text-xs font-medium text-primary">Same as Learner</label>
+                                        </div>
+                                    </div>
                                     <div className="grid md:grid-cols-2 gap-6">
                                         <div className="md:col-span-2">
                                             <label className="block text-sm font-medium text-gray-700 mb-1">Physical Address</label>
@@ -1160,6 +1433,25 @@ export const ApplicationForm = () => {
                             )}
                         </div>
                     </form>
+                )}
+
+                {/* Loading Overlay Modal */}
+                {isLoading && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+                        <div className="bg-white rounded-2xl p-8 max-w-sm w-full mx-4 shadow-2xl text-center border border-gray-100 flex flex-col items-center">
+                            <div className="w-16 h-16 bg-blue-50 text-primary rounded-full flex items-center justify-center mb-6">
+                                <Loader2 className="w-10 h-10 animate-spin" />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Uploading Files...</h3>
+                            <p className="text-gray-600 text-sm leading-relaxed mb-6">
+                                Your application is being uploaded. Depending on your document sizes and internet speed, this may take between 1 to 3 minutes.
+                                <span className="block mt-2 font-bold text-primary italic text-[10px]">Please do not refresh or close this window.</span>
+                            </p>
+                            <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
+                                <div className="bg-primary h-full w-1/2 animate-[loading_2s_infinite_linear]"></div>
+                            </div>
+                        </div>
+                    </div>
                 )}
             </div>
         </div>

@@ -10,7 +10,7 @@ export const Section: React.FC<SectionProps> = ({
     container = true,
     ...props
 }) => {
-    const baseClass = 'py-12 md:py-16 lg:py-20';
+    const baseClass = 'py-8 md:py-12 lg:py-14';
     const containerClass = container ? 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8' : '';
 
     return (

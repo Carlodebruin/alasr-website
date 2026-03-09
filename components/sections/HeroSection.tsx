@@ -6,10 +6,10 @@ export const HeroSection = () => {
     return (
         <section className="relative bg-gradient-to-br from-primary via-[#2d2b6b] to-primary text-white overflow-hidden">
             <div className="absolute inset-0 bg-[url('/images/pattern.png')] opacity-10 mix-blend-overlay"></div>
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32 relative z-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20 relative z-10">
                 <div className="lg:grid lg:grid-cols-12 lg:gap-8 items-center">
                     <div className="sm:text-center md:max-w-2xl md:mx-auto lg:col-span-6 lg:text-left">
-                        <h1 className="text-4xl tracking-tight font-extrabold sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl">
+                        <h1 className="text-3xl tracking-tight font-extrabold sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl">
                             <span className="block">Nurturing the</span>
                             <span className="block text-secondary">Leaders of Tomorrow</span>
                         </h1>

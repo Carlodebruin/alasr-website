@@ -1,6 +1,7 @@
 import { HeroSection } from "@/components/sections/HeroSection";
 import { FeatureGrid } from "@/components/sections/FeatureGrid";
 import { DonationSection } from "@/components/sections/DonationSection";
+import { PublicationsSection } from "@/components/sections/PublicationsSection";
 import { SocialSection } from "@/components/sections/SocialSection";
 import { CTASection } from "@/components/sections/CTASection";
 
@@ -10,6 +11,7 @@ export default function Home() {
       <HeroSection />
       <FeatureGrid />
       <DonationSection />
+      <PublicationsSection />
       <SocialSection />
       <CTASection />
     </div>
