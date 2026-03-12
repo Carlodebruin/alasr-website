@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, Moon } from 'lucide-react';
+import { ArrowRight, Moon, Download } from 'lucide-react';
 
 export const AnnouncementBar = () => {
     return (
@@ -16,12 +16,25 @@ export const AnnouncementBar = () => {
                         <span className="ml-1 sm:hidden">Support our students.</span>
                     </span>
                 </div>
-                <Link
-                    href="/donations"
-                    className="inline-flex items-center text-secondary hover:text-white underline underline-offset-4 decoration-secondary/30 hover:decoration-white transition-all font-bold text-sm md:text-base whitespace-nowrap"
-                >
-                    Donate <ArrowRight className="ml-1 h-3 w-3 md:h-4 md:w-4" />
-                </Link>
+                <div className="flex items-center gap-4 sm:gap-6">
+                    <Link
+                        href="/donations"
+                        className="inline-flex items-center text-secondary hover:text-white underline underline-offset-4 decoration-secondary/30 hover:decoration-white transition-all font-bold text-sm md:text-base whitespace-nowrap group-hover:scale-105 transition-transform"
+                    >
+                        Donate <ArrowRight className="ml-1 h-3 w-3 md:h-4 md:w-4" />
+                    </Link>
+
+                    <div className="hidden sm:block w-px h-4 bg-white/20"></div>
+
+                    <a
+                        href="/documents/pathway-to-light.pdf"
+                        download="Pathway_To_Light_Guide.pdf"
+                        className="inline-flex items-center gap-2 text-white hover:text-secondary transition-all font-bold text-xs md:text-sm whitespace-nowrap"
+                    >
+                        <Download size={14} className="text-secondary" />
+                        <span className="underline underline-offset-4 decoration-white/20 hover:decoration-secondary">Download Pathway2Light</span>
+                    </a>
+                </div>
             </div>
         </div>
     );

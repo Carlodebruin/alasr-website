@@ -13,36 +13,88 @@ interface Video {
 export const YouTubeGrid = () => {
     const [videos, setVideos] = useState<Video[]>([]);
     const [loading, setLoading] = useState(true);
+
     const CHANNEL_ID = "UCdv01sZQCL34l0n6HBQTBlQ";
-    const RSS_URL = `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`;
-    const API_URL = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(RSS_URL)}`;
+    const YT_RSS = `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`;
+
+    // Parse YouTube RSS XML and extract video data
+    const parseXML = (xmlText: string): Video[] => {
+        try {
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(xmlText, "application/xml");
+            const entries = Array.from(xml.querySelectorAll("entry"));
+            return entries.slice(0, 10).map((entry) => {
+                const videoId = entry.querySelector("videoId")?.textContent
+                    ?? entry.querySelector("id")?.textContent?.split(":").pop()
+                    ?? "";
+                const title = entry.querySelector("title")?.textContent ?? "Al-Asr Video";
+                const thumb = entry.querySelector("thumbnail")?.getAttribute("url")
+                    ?? `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`;
+                return { id: videoId, title, thumbnail: thumb };
+            }).filter(v => v.id);
+        } catch {
+            return [];
+        }
+    };
 
     useEffect(() => {
         const fetchVideos = async () => {
+            // Strategy 1: corsproxy.io — browser-side CORS proxy, no server needed
             try {
-                const response = await fetch(API_URL);
-                const data = await response.json();
-
-                if (data.items) {
-                    const formattedVideos = data.items.slice(0, 10).map((item: any) => ({
-                        id: item.guid.split(":")[2], // Extract video ID from "yt:video:VIDEO_ID"
-                        title: item.title,
-                        thumbnail: `https://i.ytimg.com/vi/${item.guid.split(":")[2]}/mqdefault.jpg`
-                    }));
-                    setVideos(formattedVideos);
-                } else {
-                    setVideos([]);
+                const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(YT_RSS)}`, {
+                    headers: { "x-requested-with": "XMLHttpRequest" }
+                });
+                if (res.ok) {
+                    const xml = await res.text();
+                    const parsed = parseXML(xml);
+                    if (parsed.length > 0) {
+                        setVideos(parsed);
+                        setLoading(false);
+                        return;
+                    }
                 }
-            } catch (error) {
-                console.error("Error fetching YouTube videos:", error);
-                setVideos([]);
-            } finally {
-                setLoading(false);
-            }
+            } catch (_) { /* try next */ }
+
+            // Strategy 2: rss2json as secondary fallback
+            try {
+                const res = await fetch(
+                    `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(YT_RSS)}`
+                );
+                const data = await res.json();
+                if (data.items?.length > 0) {
+                    setVideos(data.items.slice(0, 10).map((item: any) => ({
+                        id: item.guid?.split(":")?.[2] ?? "",
+                        title: item.title,
+                        thumbnail: `https://i.ytimg.com/vi/${item.guid?.split(":")?.[2]}/mqdefault.jpg`
+                    })).filter((v: Video) => v.id));
+                    setLoading(false);
+                    return;
+                }
+            } catch (_) { /* try next */ }
+
+            // Strategy 3: allorigins CORS proxy as last resort
+            try {
+                const res = await fetch(
+                    `https://api.allorigins.win/get?url=${encodeURIComponent(YT_RSS)}`
+                );
+                const data = await res.json();
+                if (data.contents) {
+                    const parsed = parseXML(data.contents);
+                    if (parsed.length > 0) {
+                        setVideos(parsed);
+                        setLoading(false);
+                        return;
+                    }
+                }
+            } catch (_) { /* all failed */ }
+
+            setVideos([]);
+            setLoading(false);
         };
 
         fetchVideos();
-    }, []);
+    }, [YT_RSS]);
+
 
     return (
         <div className="space-y-6">
