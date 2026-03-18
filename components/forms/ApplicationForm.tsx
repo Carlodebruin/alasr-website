@@ -29,6 +29,7 @@ export const ApplicationForm = () => {
     const [message, setMessage] = useState("");
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [submitErrors, setSubmitErrors] = useState<Record<string, string>>({});
+    const [stepValidationMessage, setStepValidationMessage] = useState("");
 
     const validateSAID = (id: string) => {
         if (!/^\d{13}$/.test(id)) return false;
@@ -255,7 +256,10 @@ export const ApplicationForm = () => {
         const currentSection = formRef.current?.querySelector(`[data-step="${step}"]`) as HTMLElement;
         const inputs = currentSection?.querySelectorAll("input, select, textarea");
         let isValid = true;
+        let firstInvalidElement: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null = null;
         const newErrors: Record<string, string> = { ...errors };
+
+        setStepValidationMessage("");
 
         inputs?.forEach((input) => {
             const htmlInput = input as HTMLInputElement;
@@ -277,6 +281,9 @@ export const ApplicationForm = () => {
             if (error) {
                 newErrors[htmlInput.name] = error;
                 isValid = false;
+                if (!firstInvalidElement) {
+                    firstInvalidElement = htmlInput;
+                }
             } else {
                 delete newErrors[htmlInput.name];
             }
@@ -286,7 +293,14 @@ export const ApplicationForm = () => {
 
         if (isValid) {
             setStep((s) => Math.min(s + 1, 6) as FormStep);
+            setStepValidationMessage("");
             window.scrollTo({ top: 0, behavior: "smooth" });
+        } else {
+            setStepValidationMessage("Please complete all required fields highlighted on this step before continuing.");
+            if (firstInvalidElement) {
+                firstInvalidElement.scrollIntoView({ behavior: "smooth", block: "center" });
+                firstInvalidElement.focus();
+            }
         }
     };
 
@@ -652,6 +666,13 @@ export const ApplicationForm = () => {
                     </div>
                 ) : (
                     <form ref={formRef} onSubmit={handleSubmit} onInput={saveFormData} noValidate className="space-y-6">
+                        {stepValidationMessage && (
+                            <div className="p-4 bg-amber-50 border border-amber-100 text-amber-800 rounded-lg flex items-center animate-in slide-in-from-top-2">
+                                <AlertCircle className="w-5 h-5 mr-3 shrink-0" />
+                                <span className="text-sm font-medium">{stepValidationMessage}</span>
+                            </div>
+                        )}
+
                         {status === "error" && (
                             <div className="p-4 bg-red-50 border border-red-100 text-red-700 rounded-lg flex items-center animate-in slide-in-from-top-2">
                                 <AlertCircle className="w-5 h-5 mr-3 shrink-0" />
