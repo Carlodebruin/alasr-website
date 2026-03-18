@@ -88,6 +88,7 @@ export const ApplicationForm = () => {
     const [isP1SameAsLearner, setIsP1SameAsLearner] = useState(false);
     const [isP2PostalSameAsPhysical, setIsP2PostalSameAsPhysical] = useState(false);
     const [isP2SameAsLearner, setIsP2SameAsLearner] = useState(false);
+    const [hasMedicalAid, setHasMedicalAid] = useState<"" | "yes" | "no">("");
     const [feePayer, setFeePayer] = useState("");
     const [fileNames, setFileNames] = useState<Record<string, string>>({});
     const [acceptances, setAcceptances] = useState({
@@ -183,6 +184,9 @@ export const ApplicationForm = () => {
                 if (data.step) setStep(data.step as FormStep);
                 if (data.siblings) setSiblings(data.siblings);
                 if (data.form_start_time) setStartTime(data.form_start_time);
+                if (data.hasMedicalAid === "yes" || data.hasMedicalAid === "no") {
+                    setHasMedicalAid(data.hasMedicalAid);
+                }
 
                 // Populate individual form fields (non-state controlled)
                 const elements = formRef.current.elements;
@@ -222,7 +226,7 @@ export const ApplicationForm = () => {
     // Also auto-save when state changes (step, siblings)
     useEffect(() => {
         saveFormData();
-    }, [step, siblings]);
+    }, [step, siblings, hasMedicalAid]);
 
     const addSibling = () => {
         setSiblings([...siblings, { name: "", grade: "", type: "Current" }]);
@@ -276,6 +280,15 @@ export const ApplicationForm = () => {
             }
             if (htmlInput.name === "learnerPostalCode" && step === 1) {
                 if (htmlInput.value && !/^\d{4}$/.test(htmlInput.value)) error = "Must be exactly 4 digits";
+            }
+            if (htmlInput.name === "parent1Id" && step === 2 && !htmlInput.value.trim()) {
+                error = "ID / Passport Number is required";
+            }
+            if (step === 4 && hasMedicalAid === "yes" && htmlInput.name === "medicalAidName" && !htmlInput.value.trim()) {
+                error = "Medical Aid Name is required";
+            }
+            if (step === 4 && hasMedicalAid === "yes" && htmlInput.name === "medicalAidNumber" && !htmlInput.value.trim()) {
+                error = "Medical Aid Number is required";
             }
 
             if (error) {
@@ -973,7 +986,7 @@ export const ApplicationForm = () => {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">ID / Passport Number</label>
-                                    <input name="parent1Id" type="text" className={`w-full px-4 py-2 rounded-lg border focus:ring-primary focus:border-primary ${errors.parent1Id ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} onBlur={(e) => setErrors(prev => ({ ...prev, parent1Id: e.target.checkValidity() ? "" : "ID / Passport Number is required" }))} />
+                                    <input required name="parent1Id" type="text" className={`w-full px-4 py-2 rounded-lg border focus:ring-primary focus:border-primary ${errors.parent1Id ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} onBlur={(e) => setErrors(prev => ({ ...prev, parent1Id: e.target.checkValidity() ? "" : "ID / Passport Number is required" }))} />
                                     {errors.parent1Id && <p className="text-red-500 text-xs mt-1 flex items-center"><AlertCircle className="w-3 h-3 mr-1" /> {errors.parent1Id}</p>}
                                 </div>
                                 <div>
@@ -1373,13 +1386,62 @@ export const ApplicationForm = () => {
                         <div data-step="4" className={step === 4 ? "block space-y-6 animate-in fade-in" : "hidden"}>
                             <h3 className="text-xl font-bold text-gray-900 border-b pb-2">Medical Information</h3>
                             <div className="grid md:grid-cols-2 gap-6">
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Do you have medical aid?</label>
+                                    <select
+                                        required
+                                        name="hasMedicalAid"
+                                        value={hasMedicalAid}
+                                        onChange={(e) => {
+                                            const value = e.target.value as "" | "yes" | "no";
+                                            setHasMedicalAid(value);
+                                            if (value !== "yes") {
+                                                setErrors((prev) => {
+                                                    const next = { ...prev };
+                                                    delete next.medicalAidName;
+                                                    delete next.medicalAidNumber;
+                                                    return next;
+                                                });
+                                            }
+                                        }}
+                                        className={`w-full px-4 py-2 rounded-lg border bg-white focus:ring-primary focus:border-primary ${errors.hasMedicalAid ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                                    >
+                                        <option value="">Select</option>
+                                        <option value="yes">Yes</option>
+                                        <option value="no">No</option>
+                                    </select>
+                                    {errors.hasMedicalAid && <p className="text-red-500 text-xs mt-1 flex items-center"><AlertCircle className="w-3 h-3 mr-1" /> {errors.hasMedicalAid}</p>}
+                                </div>
+
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Medical Aid Name</label>
-                                    <input name="medicalAidName" type="text" className="w-full px-4 py-2 rounded-lg border border-gray-300" />
+                                    <input
+                                        required={hasMedicalAid === "yes"}
+                                        disabled={hasMedicalAid !== "yes"}
+                                        name="medicalAidName"
+                                        type="text"
+                                        className={`w-full px-4 py-2 rounded-lg border focus:ring-primary focus:border-primary ${hasMedicalAid !== "yes" ? 'bg-gray-50' : ''} ${errors.medicalAidName ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                                        onBlur={(e) => {
+                                            const error = hasMedicalAid === "yes" && !e.target.value.trim() ? "Medical Aid Name is required" : "";
+                                            setErrors((prev) => ({ ...prev, medicalAidName: error }));
+                                        }}
+                                    />
+                                    {errors.medicalAidName && <p className="text-red-500 text-xs mt-1 flex items-center"><AlertCircle className="w-3 h-3 mr-1" /> {errors.medicalAidName}</p>}
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Medical Aid Number</label>
-                                    <input name="medicalAidNumber" type="text" className="w-full px-4 py-2 rounded-lg border border-gray-300" />
+                                    <input
+                                        required={hasMedicalAid === "yes"}
+                                        disabled={hasMedicalAid !== "yes"}
+                                        name="medicalAidNumber"
+                                        type="text"
+                                        className={`w-full px-4 py-2 rounded-lg border focus:ring-primary focus:border-primary ${hasMedicalAid !== "yes" ? 'bg-gray-50' : ''} ${errors.medicalAidNumber ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                                        onBlur={(e) => {
+                                            const error = hasMedicalAid === "yes" && !e.target.value.trim() ? "Medical Aid Number is required" : "";
+                                            setErrors((prev) => ({ ...prev, medicalAidNumber: error }));
+                                        }}
+                                    />
+                                    {errors.medicalAidNumber && <p className="text-red-500 text-xs mt-1 flex items-center"><AlertCircle className="w-3 h-3 mr-1" /> {errors.medicalAidNumber}</p>}
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Family Doctor Name</label>
@@ -1411,7 +1473,8 @@ export const ApplicationForm = () => {
                                                 <option value="">Relationship</option>
                                                 <option value="Parent">Parent</option>
                                                 <option value="Grandparent">Grandparent</option>
-                                                <option value="Aunt or Uncle">Aunt or Uncle</option>
+                                                <option value="Aunt">Aunt</option>
+                                                <option value="Uncle">Uncle</option>
                                                 <option value="Family Friend">Family Friend</option>
                                                 <option value="Other">Other</option>
                                             </select>
@@ -1468,6 +1531,7 @@ export const ApplicationForm = () => {
                                     <div className="space-y-4">
                                         {[
                                             { id: "docBirthCert", label: "Learner's Birth Certificate / ID", required: true },
+                                            { id: "docLearnerPhoto", label: "Learner Profile Photo", required: true },
                                             { id: "docReportCard", label: "Latest School Report Card", required: true },
                                             { id: "docClinicCard", label: "Clinic Card (Road to Health)", required: true },
                                             { id: "docParentId", label: "Parent/Guardian ID Document(s)", required: true },
