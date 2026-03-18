@@ -261,8 +261,8 @@ export const ApplicationForm = () => {
 
         setStepValidationMessage("");
 
-        inputs?.forEach((input) => {
-            const htmlInput = input as HTMLInputElement;
+        for (const input of Array.from(inputs || [])) {
+            const htmlInput = input as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
             let error = "";
 
             if (!htmlInput.checkValidity()) {
@@ -287,7 +287,7 @@ export const ApplicationForm = () => {
             } else {
                 delete newErrors[htmlInput.name];
             }
-        });
+        }
 
         setErrors(newErrors);
 
