@@ -1,0 +1,14 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Force all WordPress paths to the root
+  RewriteRule ^wp(/.*)?$ / [R=301,L,NC]
+  
+  # Standard Next.js static export handling (for clean URLs)
+  # This ensures that /about/ works by looking for /about/index.html 
+  # which is standard behavior, but this helps with direct file mapping.
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_FILENAME}.html -f
+  RewriteRule ^(.*)$ $1.html [L]
+</IfModule>

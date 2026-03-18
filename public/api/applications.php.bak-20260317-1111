@@ -27,78 +27,28 @@ try {
   }
 
   // 0. Spam Protection & Time Check
-  $remoteIp = $_SERVER['REMOTE_ADDR'] ?? '';
   $honeypot = $payload['allData']['website_url'] ?? '';
   $startTime = $payload['form_start_time'] ?? 0;
   $currentTime = time() * 1000;
 
   if (!empty($honeypot)) {
-    error_log('[ALASR_AUDIT] applications.php honeypot_triggered ip=' . ($remoteIp ?? 'unknown'));
     echo json_encode(['success' => true, 'message' => 'Processing...']);
     exit;
   }
 
   if (($currentTime - (int)$startTime) < 5000) {
-    error_log('[ALASR_AUDIT] applications.php timing_block ip=' . ($remoteIp ?? 'unknown') . ' elapsed_ms=' . ($currentTime - (int)$startTime));
     throw new Exception('Submission too fast. Please take your time.', 403);
   }
 
-  // 1) Capture immutable server-side network/audit evidence
-  $serverTimestamp = gmdate('c');
-  $forwardedFor = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? '';
-  $cfConnectingIp = $_SERVER['HTTP_CF_CONNECTING_IP'] ?? '';
-  $forwarded = $_SERVER['HTTP_FORWARDED'] ?? '';
-
-  $sanitizeHeader = function ($value) {
-    $clean = preg_replace('/[^a-zA-Z0-9,.:;=\s\-\[\]\(\)\/_]/', '', (string)$value);
-    return substr(trim($clean), 0, 1024);
-  };
-
-  $networkAudit = [
-    'remote_ip' => $sanitizeHeader($remoteIp),
-    'x_forwarded_for' => $sanitizeHeader($forwardedFor),
-    'cf_connecting_ip' => $sanitizeHeader($cfConnectingIp),
-    'forwarded' => $sanitizeHeader($forwarded),
-    'server_received_at' => $serverTimestamp,
-  ];
-
-  // 2. Generate Application Reference Number
+  // 1. Generate Application Reference Number
   $year = date('Y');
   $randomSuffix = str_pad(mt_rand(1, 99999), 5, '0', STR_PAD_LEFT);
   $serialNumber = "ALASR-$year-$randomSuffix";
 
   // Inject reference into payload for Google
   $payload['allData']['reference'] = $serialNumber;
-  if (!isset($payload['audit_log']) || !is_array($payload['audit_log'])) {
-    $payload['audit_log'] = [];
-  }
 
-  $payload['audit_log']['reference'] = $serialNumber;
-  $payload['audit_log']['serverTimestamp'] = $serverTimestamp;
-  $payload['audit_log']['network'] = $networkAudit;
-
-  // Validate/normalize terms metadata integrity
-  $termsVersion = trim((string)($payload['audit_log']['termsVersion'] ?? ''));
-  $termsSha256 = strtolower(trim((string)($payload['audit_log']['termsSha256'] ?? '')));
-
-  if ($termsVersion === '') {
-    $termsVersion = 'v1.0';
-  }
-
-  if (!preg_match('/^[a-f0-9]{64}$/', $termsSha256)) {
-    $termsTextSnapshot = (string)($payload['audit_log']['termsTextSnapshot'] ?? '');
-    if ($termsTextSnapshot !== '') {
-      $termsSha256 = hash('sha256', $termsTextSnapshot);
-    }
-    else {
-      throw new Exception('Missing terms metadata integrity hash.', 422);
-    }
-  }
-
-  $payload['audit_log']['termsVersion'] = $termsVersion;
-  $payload['audit_log']['termsSha256'] = $termsSha256;
-
-  // 3. Forward to Google Web App via cURL
+  // 2. Forward to Google Web App via cURL
   $ch = curl_init($GOOGLE_WEBHOOK_URL);
   curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
   curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
@@ -128,15 +78,11 @@ try {
   // Log locally if needed, but for now just pass back
   }
 
-  // 4. Pass Google's response back to the frontend
+  // 3. Pass Google's response back to the frontend
   echo $response;
 
 }
 catch (Exception $e) {
-  $code = (int)$e->getCode();
-  if ($code < 400 || $code > 599) {
-    $code = 500;
-  }
-  http_response_code($code);
+  http_response_code(500);
   echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }

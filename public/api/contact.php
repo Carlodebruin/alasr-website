@@ -17,6 +17,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $name = $data['name'] ?? '';
   $email = $data['email'] ?? '';
   $message = $data['message'] ?? '';
+  $honeypot = $data['website_url'] ?? '';
+  $startTime = (int)($data['form_start_time'] ?? 0);
+  $currentTime = time() * 1000;
+
+  if (!empty($honeypot)) {
+    error_log('[ALASR_AUDIT] contact.php honeypot_triggered ip=' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
+    echo json_encode(['success' => true, 'message' => 'Processing...']);
+    exit;
+  }
+
+  if ($startTime > 0 && ($currentTime - $startTime) < 2000) {
+    error_log('[ALASR_AUDIT] contact.php timing_block ip=' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown') . ' elapsed_ms=' . ($currentTime - $startTime));
+    http_response_code(403);
+    echo json_encode(['error' => 'Submission too fast. Please try again.']);
+    exit;
+  }
 
   if (empty($name) || empty($email) || empty($message)) {
     http_response_code(400);

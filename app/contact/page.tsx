@@ -10,6 +10,7 @@ export default function Contact() {
     const [isLoading, setIsLoading] = useState(false);
     const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
     const [message, setMessage] = useState("");
+    const [formStartTime] = useState(() => Date.now().toString());
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -82,6 +83,11 @@ export default function Contact() {
 
                 <div className="bg-surface/30 p-8 rounded-lg border border-surface">
                     <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="hidden" aria-hidden="true">
+                            <input type="text" name="website_url" tabIndex={-1} autoComplete="off" />
+                        </div>
+                        <input type="hidden" name="form_start_time" value={formStartTime} />
+
                         <div>
                             <label htmlFor="name" className="block text-sm font-medium text-foreground/80">Name</label>
                             <input required name="name" type="text" id="name" className="mt-1 block w-full rounded-md border-surface shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2 border bg-white" placeholder="Your Name" />
