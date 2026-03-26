@@ -14,7 +14,7 @@ export const HeroSection = () => {
                             <span className="block text-secondary">Leaders of Tomorrow</span>
                         </h1>
                         <p className="mt-3 text-base text-blue-100 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
-                            Excellence in Education with Islamic Values. We provide a holistic environment aimed at developing individuals who are academically proficient and Qur'anically grounded, following the CAPS curriculum alongside comprehensive Islamic Studies.
+                            Excellence in Education with Islamic Values. We provide a holistic environment aimed at developing individuals who are academically proficient and Qur'anically grounded, following the CAPS curriculum (Grades RR -12) alongside comprehensive Islamic Studies.
                         </p>
                         <div className="mt-8 sm:max-w-lg sm:mx-auto sm:text-center lg:text-left lg:mx-0">
                             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
