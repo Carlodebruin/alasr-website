@@ -123,18 +123,48 @@ export async function POST(request: NextRequest) {
         auditLog.termsSha256 = termsSha256;
         auditLog.termsTextSnapshot = termsTextSnapshot;
 
+        const signatureIntent = "I intend my electronic acceptance and typed full name to constitute my signature for this agreement.";
+        const parties = {
+            school: "Al-Asr Educational Institute",
+            parentPrimary: `${String(allData.parent1FirstName ?? "")} ${String(allData.parent1Surname ?? "")}`.trim(),
+            parentSecondary: `${String(allData.parent2FirstName ?? "")} ${String(allData.parent2Surname ?? "")}`.trim(),
+            learner: `${String(allData.learnerName ?? allData.learnerFirstName ?? "")} ${String(allData.learnerSurname ?? "")}`.trim(),
+        };
+
+        const largeFileThresholdBytes = 3 * 1024 * 1024;
+        const inlineImageMaxBytes = 2 * 1024 * 1024;
+        const annexures = ((payload.files as any[]) || []).map((fileItem, index) => {
+            const size = Number(fileItem.size || 0);
+            const mimeType = String(fileItem.mimeType || "application/octet-stream").toLowerCase();
+            const isImage = mimeType.startsWith("image/");
+            const isLarge = size > largeFileThresholdBytes;
+            const embedInPdf = isImage && size > 0 && size <= inlineImageMaxBytes;
+
+            return {
+                index: index + 1,
+                field: String(fileItem.field || `file_${index}`),
+                title: String(fileItem.field || `file_${index}`)
+                    .replace(/_/g, " ")
+                    .replace(/\b\w/g, (c) => c.toUpperCase()),
+                fileName: String(fileItem.name || `document_${index}`),
+                mimeType,
+                sizeBytes: size,
+                sha256: createHash("sha256").update(fileItem.data || "").digest("hex"),
+                status: "Captured - Pending Audit",
+                isImage,
+                embedInPdf,
+                deliveryMode: isLarge ? "download_link" : "inline_or_attachment",
+                largeFile: isLarge,
+            };
+        });
+
         const contractSnapshot = {
             reference: serialNumber,
             generatedAt: serverTimestamp,
-            parties: {
-                school: "Al-Asr Educational Institute",
-                parentPrimary: `${String(allData.parent1FirstName ?? "")} ${String(allData.parent1Surname ?? "")}`.trim(),
-                parentSecondary: `${String(allData.parent2FirstName ?? "")} ${String(allData.parent2Surname ?? "")}`.trim(),
-                learner: `${String(allData.learnerName ?? allData.learnerFirstName ?? "")} ${String(allData.learnerSurname ?? "")}`.trim(),
-            },
+            parties,
             feePaymentTerm: String(payload.feePaymentTerm ?? allData.feeTerm ?? ""),
             typedSignature: String(allData.typedFullName ?? ""),
-            signatureIntent: "I intend my electronic acceptance and typed full name to constitute my signature for this agreement.",
+            signatureIntent,
             termsVersion,
             termsSha256,
             termsTextSnapshot,
@@ -151,10 +181,28 @@ export async function POST(request: NextRequest) {
             },
             submittedFields: allData,
             siblings: Array.isArray(payload.siblings) ? payload.siblings : [],
+            annexures,
+            documentHandlingPolicy: {
+                embedImagesInPdf: true,
+                nonImageDocumentsMode: "download_link_when_large_or_non_image",
+                largeFileThresholdBytes,
+                inlineImageMaxBytes,
+            },
         };
 
         const canonicalContract = stableStringify(contractSnapshot);
         const pdfSha256 = createHash("sha256").update(canonicalContract).digest("hex");
+
+        payload.reference = serialNumber;
+        payload.generatedAt = serverTimestamp;
+        payload.signature_intent = signatureIntent;
+        payload.parties = parties;
+        payload.audit_summary = contractSnapshot.auditSummary;
+        payload.branding = contractSnapshot.branding;
+        payload.terms_text_snapshot = termsTextSnapshot;
+        payload.terms_version = termsVersion;
+        payload.terms_sha256 = termsSha256;
+        payload.pdf_sha256 = pdfSha256;
 
         payload.contract_package = {
             format: "pdf",
@@ -171,6 +219,7 @@ export async function POST(request: NextRequest) {
                 auditSummary: true,
                 approvedBranding: true,
                 contractingParties: true,
+                annexuresIndex: true,
             },
         };
 
@@ -183,7 +232,14 @@ export async function POST(request: NextRequest) {
             includeTermsVersionAndHashInBody: true,
             attachContractPdf: true,
             deliveryAuditRequired: true,
+            documentDeliveryPolicy: {
+                embedImagesInPdf: true,
+                preferDownloadLinksForLargeOrNonImageFiles: true,
+                largeFileThresholdBytes,
+                includeAnnexureIndexWithHashes: true,
+            },
         };
+
 
         auditLog.pdfSha256 = pdfSha256;
         auditLog.contractPackagePreparedAt = serverTimestamp;

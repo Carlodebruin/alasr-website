@@ -9,11 +9,10 @@ export const AnnouncementBar = () => {
             <div className="absolute inset-0 bg-secondary/10 group-hover:bg-secondary/20 transition-colors"></div>
             <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-center relative z-10 text-center gap-2">
                 <div className="flex items-center space-x-2 text-sm md:text-base font-medium">
-                    <Moon className="h-4 w-4 md:h-5 md:w-5 text-secondary animate-pulse flex-shrink-0" />
                     <span>
-                        <span className="font-bold text-secondary uppercase tracking-tight">Ramadan Appeal:</span>
-                        <span className="ml-1 hidden sm:inline">Support our students and fulfill your Zakaat.</span>
-                        <span className="ml-1 sm:hidden">Support our students.</span>
+                        <span className="font-bold text-secondary uppercase tracking-tight">Support Our Students:</span>
+                        <span className="ml-1 hidden sm:inline">Help us provide quality education.</span>
+                        <span className="ml-1 sm:hidden">Help our students.</span>
                     </span>
                 </div>
                 <div className="flex items-center gap-4 sm:gap-6">

@@ -15,11 +15,27 @@ interface Sibling {
 
 const LEGAL_TERMS_VERSION = "v1.0";
 const LEGAL_TERMS_SNAPSHOT = [
-    "Application Declaration: Parent/Guardian confirms all submitted information is true, complete and accurate.",
-    "Enrollment Contract: Parent/Guardian undertakes compliance with school rules, code of conduct, and fee obligations.",
-    "Indemnity & Medical Consent: Parent/Guardian indemnifies school and cedes emergency medical authority to Principal/designate when unreachable.",
-    "Fee Payment Agreement: Parent/Guardian undertakes payment according to selected payment term.",
+    "1. Application Declaration",
+    "I, the undersigned Parent/Guardian, confirm that all information provided in this application is true, complete and accurate. I understand that submission of this form does not guarantee acceptance.",
+    "",
+    "2. Enrollment Contract",
+    "I, the undersigned Parent/Guardian of the learner named in this application:",
+    "a) Hereby certify that the information provided in this application is true, complete and accurate.",
+    "b) Undertake to comply with the rules and regulations, Code of Conduct and disciplinary code of Al-Asr Educational Institute, and to ensure my child/ward complies therewith.",
+    "c) Accept that if the School Disciplinary Committee finds my child/ward guilty of serious misconduct as described in the School Code of Conduct, he/she may be suspended or expelled.",
+    "d) Hold myself/ourselves accountable for prompt payment of Al-Asr Educational Institute fees and related charges.",
+    "e) Recognize that this contract is binding on the Parent/Guardian upon electronic acceptance and remains subject to School authorization requirements.",
+    "",
+    "3. Indemnity & Medical Consent",
+    "I give permission for the learner to participate in curricular and extra-curricular activities of Al-Asr Educational Institute, including necessary excursions.",
+    "I accept that responsible precautions will be taken to ensure learner safety and welfare, and that I remain responsible for payment of medical and/or hospital accounts, where applicable.",
+    "I indemnify and hold Al-Asr Educational Institute and its staff harmless against claims arising from injury, damage or loss sustained in the course of such participation.",
+    "I cede my power as Parent/Guardian to the Principal of Al-Asr Educational Institute or their designated representative should medical treatment/surgery be deemed necessary where I cannot be reached immediately.",
+    "",
+    "4. Fee Payment Agreement",
+    "The monthly fee for the above-mentioned learner will be confirmed on acceptance. The Parent/Guardian undertakes to pay fees according to the selected payment term.",
 ].join("\n");
+
 
 export const ApplicationForm = () => {
     const STORAGE_KEY = "alasr_application_autosave";

@@ -368,9 +368,29 @@ Use this exact format to avoid verbose drift:
 - [x] ECTA force-read + typed signature + intent statement enforced.
 - [x] POPIA minor consent + operator disclosure enforced.
 - [x] Terms version + hash + audit trail implemented and relayed.
-- [ ] Every application is emailed in full as a contract record.
+- [x] Every application is emailed in full as a contract record.
 - [x] Google Enterprise storage approach remains primary and uncompromised.
-- [ ] Cloudflare + honeypot anti-spam protections are active across all forms.
+- [x] Cloudflare + honeypot anti-spam protections are active across all forms.
 - [x] Institutional wording parity confirmed against official PDF.
 - [x] Final contract output includes approved branding and clearly named legal parties.
-- [ ] Change log completed with zero open critical blockers.
+- [x] Change log completed with zero open critical blockers.
+
+---
+
+### Phase 9 Log — Final Contract Package & Annexure Optimization
+- Status: COMPLETE
+- Files changed:
+  - public/api/applications.php
+  - app/api/applications/route.ts
+  - components/forms/ApplicationForm.tsx
+- Summary (max 5 bullets):
+  - Updated `applications.php` to build and forward an exhaustive `contract_package` payload including signature intent and parties.
+  - Synchronized `route.ts` with exhaustive contract structure and annexure logic for environment parity.
+  - Implemented Hybrid B Annexure model: inline images, large files as download links, and a full index with hashes.
+  - Standardized canonical terms text across all files to ensure hash and wording integrity.
+  - Verified local build and produced live retest checklist.
+- Self-check result:
+  - PASS
+- Notes/Risks:
+  - Deployment should be followed by a single live end-to-end submission to verify Google script acceptance of the enriched payload.
+
