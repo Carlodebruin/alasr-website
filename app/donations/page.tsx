@@ -14,7 +14,6 @@ export default function Donations() {
             description: "Fulfill your religious obligation. Zakaat funds support eligible recipients in financial need, as well as Masjid and school upkeep projects.",
             icon: Heart,
             href: `${mainYoco}?reference=Zakaat`,
-            badge: "RAMADAN"
         },
         {
             title: "Lillah",

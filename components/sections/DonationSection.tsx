@@ -29,10 +29,9 @@ export const DonationSection = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <DonationCard
                         title="Zakaat & Sadaqat"
-                        description="Fulfill your religious obligations. Fulfill your Zakaat and Sadaqat early this Ramadan to support our students in need and school upkeep."
+                        description="Fulfill your religious obligations. Support our students in need and school upkeep through your Zakaat and Sadaqat contributions."
                         icon={Heart}
                         href={`${mainYoco}?reference=General-Welfare`}
-                        badge="RAMADAN"
                     />
                     <DonationCard
                         title="Sponsor a Child"
